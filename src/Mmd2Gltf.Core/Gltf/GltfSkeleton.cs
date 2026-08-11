@@ -1,4 +1,4 @@
-// ===========================================================================
+﻿// ===========================================================================
 // glTF の skins[0] からボーン階層を取り出す。
 // ボーン index (PMX と同じ並び) -> ノード index / 親ボーン index / rest ローカル TRS。
 // GlbPhysicsReader が extras.mmd を読むときと同じ前提に揃えてある
@@ -10,7 +10,7 @@ using System.IO;
 using System.Text.Json.Nodes;
 using BulletPhysics;
 
-namespace Mmd2Gltf.PhysBake
+namespace Mmd2Gltf
 {
     public sealed class GltfSkeleton
     {

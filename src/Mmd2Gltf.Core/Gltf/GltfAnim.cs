@@ -1,4 +1,4 @@
-// ===========================================================================
+﻿// ===========================================================================
 // glTF animation の読み出しとサンプリング。
 // mmd2gltf の出力は全チャンネルが同じ input accessor (時刻列) を共有するが、
 // ここでは前提を置かず「全 input の和集合」を時刻グリッドにして各サンプラを
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using BulletPhysics;
 
-namespace Mmd2Gltf.PhysBake
+namespace Mmd2Gltf
 {
     public sealed class AnimSampler
     {

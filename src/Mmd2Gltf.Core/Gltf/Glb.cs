@@ -1,4 +1,4 @@
-// ===========================================================================
+﻿// ===========================================================================
 // GLB (glTF binary) コンテナの読み書き。
 // JSON チャンクは System.Text.Json の JsonNode で保持し、書き換えて再直列化する。
 // BIN チャンクは末尾に追記できる (新しい accessor 用)。
@@ -12,7 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Mmd2Gltf.PhysBake
+namespace Mmd2Gltf
 {
     public sealed class Glb
     {

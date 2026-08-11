@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Mmd2Gltf</RootNamespace>
+    <!-- エンジンのソースを同居させるため、エンジン側の csproj と設定を揃える -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>11.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- テクスチャのデコード。PIL の置き換え。
+         ImageSharp は 2.1.x に固定する: 3.0 以降は Six Labors Split License
+         (商用有償) に変わったため。2.1.x は Apache-2.0 で、必要な形式
+         (PNG/JPEG/BMP/GIF/TIFF/TGA) はすべて揃っている。
+         DDS だけ ImageSharp が扱えないので Pfim (MIT) で補う。 -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.11" />
+    <PackageReference Include="Pfim" Version="0.11.4" />
+  </ItemGroup>
+
+  <!--
+    物理エンジン本体は submodule (external/mmd-physics) をソース参照する。
+    ★複製を作らないこと: エンジンの実体は mmd2gltf-cs-physics 1つだけで、
+      このリポジトリはバージョン固定で参照するだけ。更新は submodule を進める。
+    UnityShim.cs はエンジンが参照する UnityEngine 型の最小シム
+    (Core/MathTypes.cs が UnityEngine.Vector3 等への明示変換を持つため必須)。
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\external\mmd-physics\tools\compilecheck\UnityShim.cs">
+      <Link>Engine\UnityShim.cs</Link>
+    </Compile>
+    <Compile Include="..\..\external\mmd-physics\Assets\MmdPhysics\**\*.cs">
+      <Link>Engine\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

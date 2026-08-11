@@ -30,9 +30,19 @@ MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装
 | ステージ | 内容 | 状態 |
 |---|---|---|
 | 1 | `physbake`: mmd2gltf 製 GLB のアニメに物理をベイク | ✅ 動作 |
-| 2 | PMX/VMD パーサ・FK/IK ベイク・glTF ライタの移植 | 未着手 |
+| 2a | テクスチャ処理 (PIL の置き換え) | ✅ Python 版と一致 |
+| 2b | PMX/VMD パーサ・FK/IK ベイク・glTF ライタの移植 | 着手中 |
 | 3 | 1と2を統合して単一パイプラインに | 未着手 |
 | 4 | GUI | 未着手 |
+
+```
+src/
+  Mmd2Gltf.Core/       ライブラリ (glTF, テクスチャ, 物理ベイク, エンジン参照)
+  Mmd2Gltf.Cli/        mmd2gltf CLI (移植中。今は検証用の texdump のみ)
+  Mmd2Gltf.PhysBake/   physbake CLI
+external/mmd-physics/  物理エンジン (submodule)
+tools/                 Python 版との突合スクリプト
+```
 
 この順序は「常に動くものがある」ことを優先している。
 ステージ1が本プロジェクトで唯一の新規要素 (エンジン→glTFキーフレーム) で、
@@ -98,6 +108,21 @@ git add external/mmd-physics && git commit -m "engine: 上流へ追従"
 - **リンクの伸び** — `|ローカル並進| - |restローカル並進|`。
   拘束が効いていれば小さい。ただしジョイントの移動制限が広いモデル
   (例: Tda式のスカートは ±0.5) では正当に大きくなるので、しきい値だけで判断しないこと。
+
+### テクスチャ処理の突合
+
+`tools/` に Python 版と C# 版を突き合わせるスクリプトがある。
+
+```bash
+mmd2gltf texdump <モデルフォルダ>... -o cs.json --png-dir png_cs
+python tools/texdump.py --mmd2gltf ../mmd2gltf-gui <モデルフォルダ>... -o py.json --png-dir png_py
+python tools/texdiff.py py.json cs.json     # 分類・統計・平均色
+python tools/pngdiff.py png_py png_cs       # 変換後 PNG の画素
+```
+
+12モデル・248テクスチャで、分類 (opaque/mask/blend)・統計・平均色は**完全一致**。
+PNG の画素も 246枚中 235枚が完全一致、残り11枚は 16bit PNG の 8bit 化の差で最大 1/255
+(PIL は切り捨て、ImageSharp はスケーリング。後者が正しい変換なので許容している)。
 
 **検証は必ず複数モデルで回すこと。** 過去に IA 一本で詰めた結果、
 IA がたまたま使っていない機能 (ばね定数・PMX mode2・複合回転・揺れ物カーブ) の

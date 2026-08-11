@@ -1,4 +1,4 @@
-// ===========================================================================
+﻿// ===========================================================================
 // physbake — mmd2gltf が出力した GLB のアニメーションに、自作 Bullet 互換
 // エンジンで計算した揺れ物 (髪/スカート/リボン等) の動きをベイクする。
 //
@@ -15,7 +15,7 @@ using System.Text.Json.Nodes;
 using BulletPhysics;
 using BulletPhysics.Pmx;
 
-namespace Mmd2Gltf.PhysBake
+namespace Mmd2Gltf
 {
     public static class Program
     {
@@ -139,6 +139,7 @@ namespace Mmd2Gltf.PhysBake
                 log?.Invoke($"  検算 OK: バインドFK vs エンジンのボーン位置 最大誤差 {worst:E2}");
             }
 
+            // ---------------- FK: glTF アニメ -> raw PMX ボーンworld ----------------
             var fkWorld = new RigidTransform?[frames][];
             var fkWorldRaw = new RigidTransform[frames][];
             for (int f = 0; f < frames; f++)

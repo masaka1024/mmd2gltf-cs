@@ -1,4 +1,4 @@
-// ===========================================================================
+﻿// ===========================================================================
 // 自作 Bullet 互換エンジン (external/mmd-physics) を使って、
 // FK で求めたボーンworld姿勢列から物理ボーンの姿勢列を作る。
 //
@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using BulletPhysics;
 using BulletPhysics.Pmx;
 
-namespace Mmd2Gltf.PhysBake
+namespace Mmd2Gltf
 {
     public sealed class BakeOptions
     {
