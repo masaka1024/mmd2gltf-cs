@@ -43,7 +43,7 @@ foreach ($c in $cases) {
         animdump $pmx --vmd $vmd --step $st -o $csJson 2>&1 | ForEach-Object { "    C#     $_" }
     & python (Join-Path $repo "tools\modeldump.py") --mmd2gltf $Mmd2Gltf anim $pmx `
         --vmd $vmd --step $st -o $pyJson 2>&1 | ForEach-Object { "    python $_" }
-    # 実測 (IA + Conqueror light, 351フレーム, 許容差0で比較): 差があるのは
+    # 実測 (モデルA + 長尺モーション, 351フレーム, 許容差0で比較): 差があるのは
     # 全値のうち 57 個だけで、最大相対差 1.3e-15 = float64 の数 ULP。
     # float32 の分解能 (1.2e-7) より 8桁小さく、glTF の出力には現れない。
     # 式の評価順が違えば必ずこの程度は出るので、1e-9 を許容差とする。

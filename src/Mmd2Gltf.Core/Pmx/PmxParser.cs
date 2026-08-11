@@ -5,7 +5,7 @@
 //
 // ★Python 版との既知の差 (出力には出ない):
 //   BDEF2/SDEF の 2本目のウェイト `1.0 - w` を、Python は float64、こちらは
-//   float32 で計算する。IA.pmx で 87 箇所が ~3e-8 ずれるが、Python 側の値を
+//   float32 で計算する。modelA.pmx で 87 箇所が ~3e-8 ずれるが、Python 側の値を
 //   float32 へ落とすと 87 件すべてこちらと完全一致する (実測・残差 0)。
 //   glTF の WEIGHTS_0 は float32 なので、出力段では差が消える。
 //   突合するときは --tol 1e-7 を付けること。

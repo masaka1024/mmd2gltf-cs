@@ -258,7 +258,7 @@ namespace Mmd2Gltf
                 float u = 1f / unitScale;   // 過去の計測記録は全て MMD 単位なので合わせる
                 log?.Invoke($"  物理による移動 中央 {mMed * u:F3} / p90 {mP90 * u:F3} / 最大 {maxMove * u:F3} MMD単位 (ボーン '{maxMoveBone}')");
                 log?.Invoke($"  リンクの伸び   中央 {sMed * u:F3} / p90 {sP90 * u:F3} / 最大 {maxStretch * u:F3} MMD単位 (ボーン '{maxStretchBone}')");
-                // 「伸び」はジョイントの移動制限が広いモデル(例: Tda式スカートは±0.5)では
+                // 「伸び」はジョイントの移動制限が広いモデル(例: モデルBスカートは±0.5)では
                 // 正当に大きくなる。制限を超える値だけが異常なので、しきい値は緩く取る。
                 if (sP90 * u > 1.0f)
                     Console.Error.WriteLine("  警告: リンクの伸びが大きすぎます。ジョイントの移動制限を超えている可能性があります。");

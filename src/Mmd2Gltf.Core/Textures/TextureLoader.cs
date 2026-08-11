@@ -13,7 +13,7 @@
 // ★Python 版との既知かつ意図的な差 (最大 1/255):
 //   16bit PNG を 8bit へ落とすとき、PIL は上位バイトを取る切り捨て、
 //   ImageSharp は round(v*255/65535) のスケーリングを行う。後者が正しい変換。
-//   (ぽんぷ長式初音ミクのテクスチャ11枚が 16bit RGBA で該当)
+//   (モデルD 16bit RGBA で該当)
 // ===========================================================================
 using System;
 using System.Collections.Generic;
@@ -217,7 +217,7 @@ namespace Mmd2Gltf
         ///           使っていない UV 領域が透明なもの。BLEND にすると深度ソートが
         ///           壊れて顔が裏返って見える。
         ///   blend = 半透明の texel がそれなりにある (毛先など) → 本当のブレンド。
-        /// しきい値の根拠 (IA モデルでの実測): 前髪 semi_high=0.162 → blend /
+        /// しきい値の根拠 (モデルA モデルでの実測): 前髪 semi_high=0.162 → blend /
         /// 顔の肌 0.036 → mask (眉の prebake を効かせるため) / 口 0.014 → mask。
         /// </summary>
         public static AlphaClass ClassifyAlpha(Image<Rgba32> img, out AlphaStats stats)
@@ -276,7 +276,7 @@ namespace Mmd2Gltf
                 //   アルファを落として RGB をそのまま残すが、ImageSharp の Resize は
                 //   既定でアルファを乗算するため、alpha=0 の領域 (肌テクスチャの
                 //   未使用 UV など) の RGB が消えて平均色が暗くなる。
-                //   実測: IA の 肌4.png で 0.769 → 0.757 とズレていた。
+                //   実測: モデルA の 肌4.png で 0.769 → 0.757 とズレていた。
                 using var opaque = img.Clone();
                 opaque.ProcessPixelRows(accessor =>
                 {
