@@ -69,6 +69,10 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 
 `--recursive` を忘れた場合は `git submodule update --init`。
 
+> ★このリポジトリと submodule の `mmd2gltf-cs-physics` は**どちらも Private**。
+> 将来こちらを Public にするときは、**submodule も Public にしないと
+> 他人の `clone --recursive` が失敗する** (submodule だけ取得できず止まる)。
+
 ### GUI
 
 ```bash
