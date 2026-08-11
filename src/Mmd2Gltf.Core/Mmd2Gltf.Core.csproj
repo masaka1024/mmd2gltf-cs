@@ -17,6 +17,7 @@
          DDS だけ ImageSharp が扱えないので Pfim (MIT) で補う。 -->
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.11" />
     <PackageReference Include="Pfim" Version="0.11.4" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.10" />
   </ItemGroup>
 
   <!--

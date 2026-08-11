@@ -16,6 +16,8 @@ namespace Mmd2Gltf.Cli
                 switch (args[0])
                 {
                     case "texdump": return TexDump.Run(args[1..]);
+                    case "pmxdump": return ModelDump.RunPmx(args[1..]);
+                    case "vmddump": return ModelDump.RunVmd(args[1..]);
                     case "-h": case "--help": Usage(); return 0;
                     default:
                         Console.Error.WriteLine($"不明なサブコマンド: {args[0]}");
@@ -33,6 +35,8 @@ namespace Mmd2Gltf.Cli
         private static void Usage() => Console.WriteLine(@"mmd2gltf (C#版・移植中)
 
   mmd2gltf texdump <dir|file>...   テクスチャの分類結果を JSON で出す (Python 版との突合用)
+  mmd2gltf pmxdump <model.pmx> [-o out.json]   PMX のパース結果を JSON で出す
+  mmd2gltf vmddump <motion.vmd> [-o out.json]  VMD のパース結果を JSON で出す
 
 PMX→glTF 変換そのものはまだ移植中です。現時点では Python 版
 (mmd2gltf-gui) で GLB を作り、physbake で物理をベイクしてください。");
