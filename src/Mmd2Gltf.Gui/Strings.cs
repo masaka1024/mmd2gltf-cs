@@ -54,8 +54,9 @@ namespace Mmd2Gltf.Gui
             ["phys_hint"] =
                 "PMX の剛体とジョイントを自作の Bullet 互換エンジンで解いて、" +
                 "その結果をボーンのキーフレームに焼き込みます。モーション(VMD)が必要です。\n" +
-                "モデル作者が設定したパラメータがそのまま効くので、通常は下の項目を" +
-                "触る必要はありません。",
+                "入力はモデルに設定された剛体/ジョイントの値そのものなので、通常は下の項目を" +
+                "触る必要はありません。揺れ物が暴れる・破綻する場合だけ「内部の刻み」を" +
+                "上げてみてください。",
             ["phys_warmup"] = "ウォームアップ(秒)",
             ["phys_warmup_hint"] =
                 "最初のフレームの姿勢で空回しして、髪やスカートを落ち着かせてから" +
@@ -122,8 +123,9 @@ namespace Mmd2Gltf.Gui
             ["phys_hint"] =
                 "Solves the PMX rigid bodies and joints with the bundled Bullet-compatible " +
                 "engine and bakes the result into bone key frames. Requires a motion (VMD).\n" +
-                "The model author's own parameters are used as-is, so you normally do not " +
-                "need to touch the settings below.",
+                "The inputs are the rigid body / joint values stored in the model, so you " +
+                "normally do not need to touch the settings below. Raise the internal time " +
+                "step only if the secondary motion goes unstable.",
             ["phys_warmup"] = "Warm-up (seconds)",
             ["phys_warmup_hint"] =
                 "Runs the simulation at the first frame's pose so hair and skirts settle " +
