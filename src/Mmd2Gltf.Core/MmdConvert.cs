@@ -14,11 +14,34 @@
 //   3回目 ReverseZ) と オイラー順序 ZYX/YXZ バグ が生まれた。増やさないこと。
 // ===========================================================================
 using BulletPhysics;
+using Mmd2Gltf.Animation;
 
 namespace Mmd2Gltf
 {
     public static class MmdConvert
     {
+        // ------------------------------------------------------------------
+        // double 版 (PMX→glTF 変換で使う)。
+        // ★下の float 版とまったく同じ式。片方だけ直さないこと。
+        //   型が違うのは用途が違うため:
+        //     float 版  = 物理エンジン (BulletPhysics.Vec3/Quat) との受け渡し
+        //     double 版 = Python 版と数値を突き合わせる変換パイプライン
+        // ------------------------------------------------------------------
+
+        /// <summary>PMX raw 位置 → glTF 位置。convert.py の cpos と同じ。</summary>
+        public static Vec3d MmdToGltfPos(Vec3d m, double unitScale) =>
+            new Vec3d(m.X * unitScale, m.Y * unitScale, -m.Z * unitScale);
+
+        /// <summary>PMX raw 回転 → glTF 回転 (自己逆写像)。convert.py の cquat と同じ。</summary>
+        public static Quatd MmdToGltfRot(Quatd m) => new Quatd(-m.X, -m.Y, m.Z, m.W);
+
+        /// <summary>glTF 回転 → PMX raw 回転 (自己逆写像)。</summary>
+        public static Quatd GltfToMmdRot(Quatd g) => new Quatd(-g.X, -g.Y, g.Z, g.W);
+
+        /// <summary>glTF 位置 → PMX raw 位置。</summary>
+        public static Vec3d GltfToMmdPos(Vec3d g, double unitScale) =>
+            new Vec3d(g.X / unitScale, g.Y / unitScale, -g.Z / unitScale);
+
         /// <summary>glTF ローカル/ワールド位置 → PMX raw 位置。</summary>
         public static Vec3 GltfToMmdPos(Vec3 g, float unitScale) =>
             new Vec3(g.x / unitScale, g.y / unitScale, -g.z / unitScale);

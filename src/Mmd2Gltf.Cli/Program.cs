@@ -15,6 +15,7 @@ namespace Mmd2Gltf.Cli
                 if (args.Length == 0) { Usage(); return 2; }
                 switch (args[0])
                 {
+                    case "convert": return ConvertCommand.Run(args[1..]);
                     case "texdump": return TexDump.Run(args[1..]);
                     case "pmxdump": return ModelDump.RunPmx(args[1..]);
                     case "vmddump": return ModelDump.RunVmd(args[1..]);
@@ -35,13 +36,17 @@ namespace Mmd2Gltf.Cli
 
         private static void Usage() => Console.WriteLine(@"mmd2gltf (C#版・移植中)
 
-  mmd2gltf texdump <dir|file>...   テクスチャの分類結果を JSON で出す (Python 版との突合用)
+  mmd2gltf convert <model.pmx> [--vmd <motion.vmd>] [-o out.glb] [オプション]
+                                   PMX (+VMD) を glTF 2.0 (.glb) へ変換する
+                                   (揺れ物の物理は physbake が後段で焼く)
+
+  -- 以下は Python 版との突合用の検証コマンド --
+  mmd2gltf texdump <dir|file>...   テクスチャの分類結果を JSON で出す
   mmd2gltf pmxdump <model.pmx> [-o out.json]   PMX のパース結果を JSON で出す
   mmd2gltf vmddump <motion.vmd> [-o out.json]  VMD のパース結果を JSON で出す
   mmd2gltf animdump <model.pmx> --vmd <motion.vmd> [-o out.json]
                                    FK/IK ベイク結果を JSON で出す
 
-PMX→glTF 変換そのものはまだ移植中です。現時点では Python 版
-(mmd2gltf-gui) で GLB を作り、physbake で物理をベイクしてください。");
+各コマンドの詳細は `mmd2gltf <コマンド> --help`。");
     }
 }

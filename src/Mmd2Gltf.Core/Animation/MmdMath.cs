@@ -128,6 +128,26 @@ namespace Mmd2Gltf.Animation
             return new Vec3d(ex, ey, ez);
         }
 
+        /// <summary>
+        /// PMX 剛体 / Joint のオイラー角 (ラジアン) → クォータニオン。適用順は Z→X→Y、
+        /// すなわち R = Ry * Rx * Rz (YXZ 順)。Bullet の btQuaternion(yaw,pitch,roll) と同型。
+        /// エンジンの Quat.FromEulerYxz と同じ規約 (あちらは float の展開形、
+        /// こちらは Python 版 physics.py と同じ「軸ごとに作って順に掛ける」形)。
+        /// ★ZYX 順にしないこと。過去に取り違えて剛体の向きがズレた。
+        /// </summary>
+        public static Quatd FromEulerYxz(double rx, double ry, double rz)
+        {
+            Quatd Axis(double x, double y, double z, double ang)
+            {
+                double s = Math.Sin(ang * 0.5);
+                return new Quatd(x * s, y * s, z * s, Math.Cos(ang * 0.5));
+            }
+            var qy = Axis(0, 1, 0, ry);
+            var qx = Axis(1, 0, 0, rx);
+            var qz = Axis(0, 0, 1, rz);
+            return qy * qx * qz;
+        }
+
         public static Quatd FromEulerXyz(Vec3d e)
         {
             double cx = Math.Cos(e.X / 2), sx = Math.Sin(e.X / 2);

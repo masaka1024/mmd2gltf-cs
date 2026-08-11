@@ -29,16 +29,26 @@ MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装
 
 | ステージ | 内容 | 状態 |
 |---|---|---|
-| 1 | `physbake`: mmd2gltf 製 GLB のアニメに物理をベイク | ✅ 動作 |
+| 1 | `physbake`: GLB のアニメに自作エンジンの物理をベイク | ✅ 動作 |
 | 2a | テクスチャ処理 (PIL の置き換え) | ✅ Python 版と一致 |
-| 2b | PMX/VMD パーサ・FK/IK ベイク・glTF ライタの移植 | 着手中 |
-| 3 | 1と2を統合して単一パイプラインに | 未着手 |
+| 2b | PMX / VMD パーサ | ✅ Python 版と一致 |
+| 2c | FK/IK アニメーションベイク | ✅ Python 版と一致 |
+| 2d | glTF ライタと変換本体 | ✅ Python 版と一致 |
+| 3 | convert と physbake を1コマンドに統合 | 未着手 |
 | 4 | GUI | 未着手 |
 
 ```
 src/
-  Mmd2Gltf.Core/       ライブラリ (glTF, テクスチャ, 物理ベイク, エンジン参照)
-  Mmd2Gltf.Cli/        mmd2gltf CLI (移植中。今は検証用の texdump のみ)
+  Mmd2Gltf.Core/       ライブラリ
+    Pmx/               PMX パーサ
+    Vmd/               VMD パーサ
+    Animation/         FK/IK ベイク、MMD の数学
+    Textures/          テクスチャのデコードとアルファ処理
+    Gltf/              glTF ビルダー / GLB 読み書き
+    Conversion/        PMX -> glTF 変換本体
+    Physics/           自作エンジンでの物理ベイク
+    MmdConvert.cs      MMD <-> glTF の座標規約 (ここ1箇所だけ)
+  Mmd2Gltf.Cli/        mmd2gltf CLI (convert + 検証用ダンプ)
   Mmd2Gltf.PhysBake/   physbake CLI
 external/mmd-physics/  物理エンジン (submodule)
 tools/                 Python 版との突合スクリプト
@@ -59,12 +69,15 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 `--recursive` を忘れた場合は `git submodule update --init`。
 
 ```bash
-# 1) Python 版で PMX+VMD → GLB (物理ベイクは使わない)
-python -m mmd2gltf model.pmx --vmd motion.vmd -o model.glb
+# 1) PMX+VMD → GLB (揺れ物の物理はまだ入っていない)
+mmd2gltf convert model.pmx --vmd motion.vmd -o model.glb
 
 # 2) その GLB に自作エンジンの物理をベイク
 physbake model.glb -o model_phys.glb
 ```
+
+ステージ3でこの2つを1コマンドにまとめる予定。それまでは2段で実行する。
+`mmd2gltf convert --help` / `physbake --help` で全オプション。
 
 `physbake --help` で全オプション。主なもの:
 
@@ -108,6 +121,43 @@ git add external/mmd-physics && git commit -m "engine: 上流へ追従"
 - **リンクの伸び** — `|ローカル並進| - |restローカル並進|`。
   拘束が効いていれば小さい。ただしジョイントの移動制限が広いモデル
   (例: Tda式のスカートは ±0.5) では正当に大きくなるので、しきい値だけで判断しないこと。
+
+### Python 版との突合
+
+`tools/` に、同じ入力に対する Python 版と C# 版の出力を突き合わせるスクリプトがある。
+移植の各段でこれを回して差分ゼロを確認している。
+
+```bash
+pwsh tools/compare_all.ps1     -Work <作業用フォルダ>   # PMX / VMD のパース結果
+pwsh tools/compare_anim.ps1    -Work <作業用フォルダ>   # FK/IK ベイク結果
+pwsh tools/compare_convert.ps1 -Work <作業用フォルダ>   # 変換した GLB 全体
+```
+
+※`.ps1` は UTF-8 **BOM 付き**で保存すること。Windows PowerShell 5.1 は BOM 無しの
+`.ps1` を ANSI として読むため、日本語パスでパースエラーになる。
+
+結果 (2026-08-11):
+
+| 対象 | 検証範囲 | 結果 |
+|---|---|---|
+| PMX パーサ | 13モデル | 差分0 |
+| VMD パーサ | 5モーション | 差分0 |
+| FK/IK ベイク | 7ケース | 差分0 |
+| テクスチャ | 12モデル 248枚 | 差分0 |
+| GLB 全体 | 14ケース | 差分0 |
+
+GLB 比較 (`tools/glbdiff.py`) が通す差は3種類だけで、いずれも原因が特定済み:
+
+- **accessor の float32 1ULP** — FK/IK ベイクに残る float64 の数 ULP の差
+  (実測 最大 1.3e-15 相対) が float32 の丸め境界をまたぐと起きる。
+  ぬこ式レーシングミクで 5 値 / 最大 8.6e-8 相対。float32 の分解能そのもの。
+- **baseColorFactor ~1e-4** — スフィアマップ専用材質のフォールバック色。
+  テクスチャを 32x32 へ縮小して平均する処理の補間実装が PIL と ImageSharp で違う
+  (IA の材質 12/13)。
+- **画像の 1/255** — 16bit PNG の 8bit 化。PIL は切り捨て、ImageSharp はスケーリング
+  (後者が正しい変換)。
+
+整数の accessor (index / JOINTS_0 など) は完全一致を要求している。
 
 ### テクスチャ処理の突合
 
