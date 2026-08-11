@@ -79,6 +79,74 @@ namespace Mmd2Gltf.Cli
             return 0;
         }
 
+        /// <summary>animdump — FK/IK ベイク結果を JSON で出す。</summary>
+        public static int RunAnim(string[] args)
+        {
+            string pmx = null, vmd = null, output = null;
+            int step = 1;
+            bool solveIk = true, useVmdIk = true;
+            var disableIk = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < args.Length; i++)
+            {
+                switch (args[i])
+                {
+                    case "-o": output = args[++i]; break;
+                    case "--vmd": vmd = args[++i]; break;
+                    case "--step": step = int.Parse(args[++i]); break;
+                    case "--no-ik": solveIk = false; break;
+                    case "--ignore-vmd-ik": useVmdIk = false; break;
+                    case "--disable-ik": disableIk.Add(args[++i]); break;
+                    default:
+                        if (pmx == null) pmx = args[i];
+                        else throw new ArgumentException("入力が多すぎます。");
+                        break;
+                }
+            }
+            if (pmx == null || vmd == null)
+                throw new ArgumentException("使い方: animdump <model.pmx> --vmd <motion.vmd> [-o out.json]");
+
+            var model = PmxParser.Parse(pmx);
+            var motion = VmdParser.Parse(vmd);
+            var baked = Mmd2Gltf.Animation.AnimationBaker.Bake(
+                model, motion, solveIk, step, disableIk, useVmdIk);
+
+            var bones = new System.Collections.Generic.SortedDictionary<string, object>();
+            foreach (var kv in baked.Bones)
+            {
+                double[][] r = null, t = null;
+                if (kv.Value.Rotations != null)
+                {
+                    r = new double[kv.Value.Rotations.Length][];
+                    for (int i = 0; i < r.Length; i++)
+                    {
+                        var q = kv.Value.Rotations[i];
+                        r[i] = new[] { q.X, q.Y, q.Z, q.W };
+                    }
+                }
+                if (kv.Value.Translations != null)
+                {
+                    t = new double[kv.Value.Translations.Length][];
+                    for (int i = 0; i < t.Length; i++)
+                    {
+                        var v = kv.Value.Translations[i];
+                        t[i] = new[] { v.X, v.Y, v.Z };
+                    }
+                }
+                bones[kv.Key.ToString()] = new { r, t };
+            }
+
+            Write(new
+            {
+                times = baked.Times,
+                bones,
+                unmatched = baked.UnmatchedVmdBones,
+            }, output);
+            Console.Error.WriteLine(
+                $"ベイク {baked.Times.Length}フレーム / 動いたボーン {baked.Bones.Count} / " +
+                $"PMX に無かった VMD トラック {baked.UnmatchedVmdBones.Count}");
+            return 0;
+        }
+
         private static void Parse(string[] args, out string input, out string output)
         {
             input = null; output = null;
