@@ -14,6 +14,7 @@ using System.IO;
 using System.Text.Json.Nodes;
 using BulletPhysics;
 using BulletPhysics.Pmx;
+using Mmd2Gltf.Physics;
 
 namespace Mmd2Gltf
 {

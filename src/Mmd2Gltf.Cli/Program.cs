@@ -20,6 +20,7 @@ namespace Mmd2Gltf.Cli
                     case "pmxdump": return ModelDump.RunPmx(args[1..]);
                     case "vmddump": return ModelDump.RunVmd(args[1..]);
                     case "animdump": return ModelDump.RunAnim(args[1..]);
+                    case "enginedump": return EngineDump.Run(args[1..]);
                     case "-h": case "--help": Usage(); return 0;
                     default:
                         Console.Error.WriteLine($"不明なサブコマンド: {args[0]}");

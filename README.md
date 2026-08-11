@@ -34,7 +34,7 @@ MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装
 | 2b | PMX / VMD パーサ | ✅ Python 版と一致 |
 | 2c | FK/IK アニメーションベイク | ✅ Python 版と一致 |
 | 2d | glTF ライタと変換本体 | ✅ Python 版と一致 |
-| 3 | convert と physbake を1コマンドに統合 | 未着手 |
+| 3 | convert と physbake を1コマンドに統合 | ✅ 動作 |
 | 4 | GUI | 未着手 |
 
 ```
@@ -69,14 +69,18 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 `--recursive` を忘れた場合は `git submodule update --init`。
 
 ```bash
-# 1) PMX+VMD → GLB (揺れ物の物理はまだ入っていない)
-mmd2gltf convert model.pmx --vmd motion.vmd -o model.glb
+# 変換 + 揺れ物の物理ベイクを1コマンドで
+mmd2gltf convert model.pmx --vmd motion.vmd --bake-physics -o model.glb
+```
 
-# 2) その GLB に自作エンジンの物理をベイク
+`--bake-physics` は変換の途中でエンジンを回すので、中間ファイルを作らない。
+既にある GLB へ後から物理を足したいとき (Python 版の出力など) は `physbake` を使う:
+
+```bash
+mmd2gltf convert model.pmx --vmd motion.vmd -o model.glb
 physbake model.glb -o model_phys.glb
 ```
 
-ステージ3でこの2つを1コマンドにまとめる予定。それまでは2段で実行する。
 `mmd2gltf convert --help` / `physbake --help` で全オプション。
 
 `physbake --help` で全オプション。主なもの:
@@ -173,6 +177,31 @@ python tools/pngdiff.py png_py png_cs       # 変換後 PNG の画素
 12モデル・248テクスチャで、分類 (opaque/mask/blend)・統計・平均色は**完全一致**。
 PNG の画素も 246枚中 235枚が完全一致、残り11枚は 16bit PNG の 8bit 化の差で最大 1/255
 (PIL は切り捨て、ImageSharp はスケーリング。後者が正しい変換なので許容している)。
+
+### ★物理はフレーム単位では再現しない (カオス的)
+
+揺れ物の物理は **1e-7 の入力差で結果が大きく変わる**。実測 (IA + 歩き, 61フレーム):
+
+| 比較 | 振幅の相対差 中央 | 最大 |
+|---|---|---|
+| 統合パス vs 2段パス | 4.7% | 37% |
+| **同じコードパス同士 (入力差 1e-7 のみ)** | **4.0%** | **40%** |
+
+2経路の差は、同じコードに 1e-7 の摂動を与えたときと同じ大きさしかない。
+自由に揺れる髪はカオス的なので、経路が違えば必ず位相がずれる。
+**物理チャンネルをフレーム単位で突き合わせても意味が無い**。
+`tools/animcmp.py --stats` の振幅比較で判定すること
+(回転は q と -q が同じ姿勢なので、成分ではなく回転角で測っている)。
+
+FK チャンネル (物理でないボーン) は完全一致を要求してよい。
+
+```bash
+python tools/animcmp.py a.glb b.glb --stats   # 順序非依存のチャンネル比較
+pwsh tools/check_bake.ps1 -Work <作業用フォルダ>  # 12モデルで発散しないか確認
+```
+
+`PHYS_FK_FLOAT32=1` を環境変数に置くと、統合パスの FK 入力を physbake と同じ
+float32 精度へ落とす。差がどこから来るかの切り分け用 (上の表はこれで測った)。
 
 **検証は必ず複数モデルで回すこと。** 過去に IA 一本で詰めた結果、
 IA がたまたま使っていない機能 (ばね定数・PMX mode2・複合回転・揺れ物カーブ) の

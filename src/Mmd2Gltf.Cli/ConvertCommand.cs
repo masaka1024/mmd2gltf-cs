@@ -29,7 +29,17 @@ namespace Mmd2Gltf.Cli
       --force-double-sided  全材質を両面描画にする
       --morph-mode <MODE>   sparse|dense|none (既定 sparse)
       --scale <F>           MMD 単位 → glTF 単位 (既定 0.08)
-  -q, --quiet               ログを出さない");
+  -q, --quiet               ログを出さない
+
+物理ベイク (--vmd と併用。PMX の剛体/Joint を自作エンジンで解く):
+      --bake-physics        揺れ物 (髪/スカート等) の物理を焼く
+      --warmup <秒>         フレーム0姿勢での空回し (既定 2.0)
+      --sim-hz <Hz>         内部固定刻み (既定: エンジン既定 30)
+      --substeps <N>        1ステップあたりのサブステップ数 (既定: エンジン既定 2)
+      --iterations <N>      ソルバ反復数 (既定: エンジン既定 10)
+      --gravity <G>         重力の大きさ・MMDスケール (既定: エンジン既定 98)
+      --no-bone-merge       PMX mode2 (物理演算+ボーン位置合わせ) を無効にする
+      --align-bones         全物理ボーンに位置合わせ補正を適用する (既定 OFF)");
 
         public static int Run(string[] args)
         {
@@ -59,6 +69,14 @@ namespace Mmd2Gltf.Cli
                     case "--force-double-sided": opt.ForceDoubleSided = true; break;
                     case "--morph-mode": opt.MorphMode = Next(); break;
                     case "--scale": opt.Scale = double.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--bake-physics": opt.BakePhysics = true; break;
+                    case "--warmup": opt.Physics.WarmupSeconds = float.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--sim-hz": opt.Physics.SimHz = float.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--substeps": opt.Physics.SubSteps = int.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--iterations": opt.Physics.SolverIterations = int.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--gravity": opt.Physics.Gravity = float.Parse(Next(), CultureInfo.InvariantCulture); break;
+                    case "--no-bone-merge": opt.Physics.BoneMergeMode = false; break;
+                    case "--align-bones": opt.Physics.AlignBonePositions = true; break;
                     case "-q": case "--quiet": quiet = true; break;
                     default:
                         if (a.StartsWith("-")) throw new ArgumentException($"不明なオプション: {a}");

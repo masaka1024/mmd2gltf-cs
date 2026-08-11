@@ -42,6 +42,11 @@ namespace Mmd2Gltf.Conversion
         public bool ForceDoubleSided;
         public bool CustomAttrs = true;
         public double Scale = 0.08;
+
+        /// <summary>揺れ物 (髪/スカート等) の物理を自作エンジンで焼く。
+        /// PMX の剛体/Joint が要る。--vmd 無しでは何もしない。</summary>
+        public bool BakePhysics;
+        public Mmd2Gltf.Physics.BakeOptions Physics = new();
     }
 
     public static class MmdConverter
@@ -677,17 +682,46 @@ namespace Mmd2Gltf.Conversion
                 if (baked.UnmatchedVmdBones.Count > 0)
                     log($"  {baked.UnmatchedVmdBones.Count} VMD bone tracks had no matching PMX bone");
 
+                // 揺れ物の物理。物理ボーンの姿勢は FK ではなくエンジンの結果で差し替える。
+                Mmd2Gltf.Physics.PhysicsPassResult phys = null;
+                if (opt.BakePhysics)
+                {
+                    if (model.RigidBodies.Count == 0)
+                        log("  物理ベイクを指定されましたが、この PMX には剛体がありません (何もしません)");
+                    else
+                    {
+                        log("  物理ベイク:");
+                        phys = Mmd2Gltf.Physics.PhysicsPass.Run(model, baked, opt.Physics, scale, log);
+                        if (phys.NanBone != null)
+                            log($"  警告: 物理が発散しました (最初の検出: ボーン '{phys.NanBone}')。" +
+                                "ばね定数が大きすぎる/質量が小さすぎるモデルの可能性があります。");
+                        log($"    物理ボーン {phys.PhysicsBones.Length} / {phys.StepCount} ステップ / {phys.Seconds:F2}s");
+                        log($"    物理による移動 中央 {phys.MoveMedian:F3} / p90 {phys.MoveP90:F3} / " +
+                            $"最大 {phys.MoveMax:F3} MMD単位 (ボーン '{phys.MoveMaxBone}')");
+                        log($"    リンクの伸び   中央 {phys.StretchMedian:F3} / p90 {phys.StretchP90:F3} / " +
+                            $"最大 {phys.StretchMax:F3} MMD単位 (ボーン '{phys.StretchMaxBone}')");
+                    }
+                }
+
                 int tAcc = g.AddAccessor(baked.Times, "SCALAR", minmax: true);
 
-                foreach (int bi in baked.Bones.Keys.OrderBy(k => k))
+                // 出力対象 = FK で動いたボーン ∪ 物理ボーン。
+                // 物理ボーンは VMD にトラックが無くても動くので、和集合を取る必要がある。
+                var boneIds = new SortedSet<int>(baked.Bones.Keys);
+                if (phys != null) foreach (int b in phys.PhysicsBones) boneIds.Add(b);
+
+                foreach (int bi in boneIds)
                 {
-                    var data = baked.Bones[bi];
-                    if (data.Rotations != null)
+                    baked.Bones.TryGetValue(bi, out var data);
+                    bool isPhys = phys != null && phys.LocalRotations.ContainsKey(bi);
+
+                    var rots = isPhys ? phys.LocalRotations[bi] : data?.Rotations;
+                    if (rots != null)
                     {
-                        var flat = new List<double>(data.Rotations.Length * 4);
+                        var flat = new List<double>(rots.Length * 4);
                         Quatd prev = default;
                         bool hasPrev = false;
-                        foreach (var q0 in data.Rotations)
+                        foreach (var q0 in rots)
                         {
                             var q = MmdConvert.MmdToGltfRot(q0);
                             if (hasPrev && q.X * prev.X + q.Y * prev.Y + q.Z * prev.Z + q.W * prev.W < 0)
@@ -698,10 +732,13 @@ namespace Mmd2Gltf.Conversion
                         AddChannel(samplers, channels, tAcc,
                                    g.AddAccessor(flat, "VEC4"), bi, "rotation");
                     }
-                    if (data.Translations != null)
+
+                    // 物理はスカート等を回転だけでは表せないので並進も焼く。
+                    var trans = isPhys ? phys.LocalTranslations[bi] : data?.Translations;
+                    if (trans != null)
                     {
-                        var flat = new List<double>(data.Translations.Length * 3);
-                        foreach (var t in data.Translations)
+                        var flat = new List<double>(trans.Length * 3);
+                        foreach (var t in trans)
                         {
                             var p = MmdConvert.MmdToGltfPos(t, scale);
                             flat.Add(p.X); flat.Add(p.Y); flat.Add(p.Z);
@@ -711,6 +748,8 @@ namespace Mmd2Gltf.Conversion
                     }
                 }
                 log($"  bone animation: {channels.Count} channels, {baked.Times.Length} key frames");
+                if (phys != null)
+                    log($"  physics channels: {phys.PhysicsBones.Length * 2}");
             }
 
             // モーフ (weights) のアニメーション。キーの間は線形。
