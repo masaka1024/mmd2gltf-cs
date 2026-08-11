@@ -35,7 +35,7 @@ MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装
 | 2c | FK/IK アニメーションベイク | ✅ Python 版と一致 |
 | 2d | glTF ライタと変換本体 | ✅ Python 版と一致 |
 | 3 | convert と physbake を1コマンドに統合 | ✅ 動作 |
-| 4 | GUI | 未着手 |
+| 4 | GUI (Avalonia / Windows・macOS・Linux) | ✅ 動作 (macOS は未検証) |
 
 ```
 src/
@@ -50,6 +50,7 @@ src/
     MmdConvert.cs      MMD <-> glTF の座標規約 (ここ1箇所だけ)
   Mmd2Gltf.Cli/        mmd2gltf CLI (convert + 検証用ダンプ)
   Mmd2Gltf.PhysBake/   physbake CLI
+  Mmd2Gltf.Gui/        GUI (Avalonia)
 external/mmd-physics/  物理エンジン (submodule)
 tools/                 Python 版との突合スクリプト
 ```
@@ -67,6 +68,33 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 ```
 
 `--recursive` を忘れた場合は `git submodule update --init`。
+
+### GUI
+
+```bash
+dotnet run --project src/Mmd2Gltf.Gui
+```
+
+ファイルを選ぶ (ドラッグ&ドロップ可)、オプションを決める、変換する、だけ。
+日本語 / English は起動時に OS のロケールから選ばれ、右上で切り替えられる。
+
+Avalonia (MIT) なので Windows / macOS / Linux で同じコードが動く。
+依存はすべてマネージド (ImageSharp / Pfim / エンジン本体) でネイティブ依存は無い。
+**ただし macOS では未検証** — 手元に Mac が無く、動作確認は Windows のみ。
+
+配布用にビルドする場合:
+
+```bash
+dotnet publish src/Mmd2Gltf.Gui -c Release -r win-x64   --self-contained -p:PublishSingleFile=true
+dotnet publish src/Mmd2Gltf.Gui -c Release -r osx-arm64 --self-contained
+dotnet publish src/Mmd2Gltf.Gui -c Release -r osx-x64   --self-contained
+```
+
+macOS で普通のアプリとして扱うには、出力を `.app` バンドル
+(`Contents/MacOS/` に実行ファイル + `Contents/Info.plist`) に包む必要がある。
+未署名なので初回は右クリック →「開く」で起動する。
+
+### CLI
 
 ```bash
 # 変換 + 揺れ物の物理ベイクを1コマンドで

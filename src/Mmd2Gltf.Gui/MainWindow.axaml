@@ -1,0 +1,180 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Mmd2Gltf.Gui.MainWindow"
+        Width="760" Height="820" MinWidth="620" MinHeight="520"
+        Title="mmd2gltf">
+  <Window.Styles>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="Foreground" Value="#808080" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,0,0,6" />
+    </Style>
+    <Style Selector="TextBlock.field">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style Selector="CheckBox">
+      <Setter Property="Margin" Value="0,2,0,2" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="10">
+
+    <!-- 言語 -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+      <TextBlock Text="Language / 言語" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <ComboBox x:Name="LangBox" Width="120" SelectedIndex="0">
+        <ComboBoxItem>日本語</ComboBoxItem>
+        <ComboBoxItem>English</ComboBoxItem>
+      </ComboBox>
+    </StackPanel>
+
+    <!-- 横スクロールは切る。許すと中身が幅を無限に取れてしまい、
+         参照ボタンや長い説明文がウィンドウの外へ出る。 -->
+    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Spacing="8">
+
+        <!-- ファイル -->
+        <HeaderedContentControl x:Name="FilesGroup">
+          <HeaderedContentControl.Template>
+            <ControlTemplate>
+              <Border BorderBrush="#40808080" BorderThickness="1" CornerRadius="4" Padding="10">
+                <StackPanel>
+                  <TextBlock Text="{TemplateBinding Header}" FontWeight="SemiBold" Margin="0,0,0,6" />
+                  <ContentPresenter Content="{TemplateBinding Content}" />
+                </StackPanel>
+              </Border>
+            </ControlTemplate>
+          </HeaderedContentControl.Template>
+          <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" >
+            <TextBlock x:Name="PmxLabel" Grid.Row="0" Grid.Column="0" Classes="field" />
+            <TextBox x:Name="PmxBox" Grid.Row="0" Grid.Column="1" Margin="0,2" />
+            <Button x:Name="PmxBrowse" Grid.Row="0" Grid.Column="2" Margin="6,2,0,2" />
+
+            <TextBlock x:Name="VmdLabel" Grid.Row="1" Grid.Column="0" Classes="field" />
+            <TextBox x:Name="VmdBox" Grid.Row="1" Grid.Column="1" Margin="0,2" />
+            <Button x:Name="VmdBrowse" Grid.Row="1" Grid.Column="2" Margin="6,2,0,2" />
+
+            <TextBlock x:Name="OutLabel" Grid.Row="2" Grid.Column="0" Classes="field" />
+            <TextBox x:Name="OutBox" Grid.Row="2" Grid.Column="1" Margin="0,2" />
+            <Button x:Name="OutBrowse" Grid.Row="2" Grid.Column="2" Margin="6,2,0,2" />
+
+            <TextBlock x:Name="DropHint" Grid.Row="3" Grid.Column="1" Classes="hint" Margin="0,4,0,0" />
+          </Grid>
+        </HeaderedContentControl>
+
+        <!-- オプション -->
+        <Border BorderBrush="#40808080" BorderThickness="1" CornerRadius="4" Padding="10">
+          <StackPanel>
+            <TextBlock x:Name="OptionsHeader" FontWeight="SemiBold" Margin="0,0,0,6" />
+            <CheckBox x:Name="UnlitCb" />
+            <CheckBox x:Name="DoubleSidedCb" />
+            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+              <TextBlock x:Name="MorphLabel" Classes="field" />
+              <ComboBox x:Name="MorphBox" Width="140" SelectedIndex="0">
+                <ComboBoxItem>sparse</ComboBoxItem>
+                <ComboBoxItem>dense</ComboBoxItem>
+                <ComboBoxItem>none</ComboBoxItem>
+              </ComboBox>
+            </StackPanel>
+            <TextBlock x:Name="MorphHint" Classes="hint" Margin="0,4,0,6" />
+            <StackPanel Orientation="Horizontal">
+              <TextBlock x:Name="AlphaLabel" Classes="field" />
+              <ComboBox x:Name="AlphaBox" Width="140" SelectedIndex="0">
+                <ComboBoxItem>auto</ComboBoxItem>
+                <ComboBoxItem>opaque</ComboBoxItem>
+                <ComboBoxItem>mask</ComboBoxItem>
+                <ComboBoxItem>blend</ComboBoxItem>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+              <TextBlock x:Name="ScaleLabel" Classes="field" />
+              <TextBox x:Name="ScaleBox" Width="90" Text="0.08" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 詳細設定 -->
+        <!-- Expander の中身は既定で左寄せなので、明示的に横いっぱいへ広げる -->
+        <Expander x:Name="AdvExpander" HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch">
+          <TabControl x:Name="AdvTabs">
+            <TabItem x:Name="TabGeneral">
+              <StackPanel Margin="6" Spacing="2">
+                <CheckBox x:Name="NoIkCb" />
+                <CheckBox x:Name="IgnoreVmdIkCb" />
+                <CheckBox x:Name="NoExtrasCb" />
+                <CheckBox x:Name="NoCustomAttrsCb" />
+                <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto" Margin="0,8,0,0">
+                  <TextBlock x:Name="DisableIkLabel" Grid.Row="0" Grid.Column="0" Classes="field"
+                             TextWrapping="Wrap" />
+                  <TextBox x:Name="DisableIkBox" Grid.Row="0" Grid.Column="1" Margin="0,2" />
+                  <TextBlock x:Name="StepLabel" Grid.Row="1" Grid.Column="0" Classes="field"
+                             TextWrapping="Wrap" />
+                  <TextBox x:Name="StepBox" Grid.Row="1" Grid.Column="1" Width="90"
+                           HorizontalAlignment="Left" Text="1" Margin="0,2" />
+                  <TextBlock x:Name="AnimNameLabel" Grid.Row="2" Grid.Column="0" Classes="field"
+                             TextWrapping="Wrap" />
+                  <TextBox x:Name="AnimNameBox" Grid.Row="2" Grid.Column="1" Margin="0,2" />
+                </Grid>
+              </StackPanel>
+            </TabItem>
+
+            <TabItem x:Name="TabPhysics">
+              <StackPanel Margin="6" Spacing="2">
+                <CheckBox x:Name="PhysEnableCb" FontWeight="SemiBold" />
+                <TextBlock x:Name="PhysHint" Classes="hint" />
+                <StackPanel x:Name="PhysGrid" Spacing="2">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="WarmupLabel" Classes="field" />
+                    <TextBox x:Name="WarmupBox" Width="90" Text="2.0" />
+                  </StackPanel>
+                  <TextBlock x:Name="WarmupHint" Classes="hint" />
+
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="SimHzLabel" Classes="field" />
+                    <TextBox x:Name="SimHzBox" Width="90" Text="0" />
+                  </StackPanel>
+                  <TextBlock x:Name="SimHzHint" Classes="hint" />
+
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="SubStepsLabel" Classes="field" />
+                    <TextBox x:Name="SubStepsBox" Width="90" Text="0" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="IterationsLabel" Classes="field" />
+                    <TextBox x:Name="IterationsBox" Width="90" Text="0" />
+                  </StackPanel>
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="GravityLabel" Classes="field" />
+                    <TextBox x:Name="GravityBox" Width="90" Text="0" />
+                  </StackPanel>
+                  <TextBlock x:Name="GravityHint" Classes="hint" />
+                </StackPanel>
+                <CheckBox x:Name="NoBoneMergeCb" />
+                <CheckBox x:Name="AlignBonesCb" />
+                <TextBlock x:Name="AlignHint" Classes="hint" />
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+        </Expander>
+
+        <!-- ログ -->
+        <Border BorderBrush="#40808080" BorderThickness="1" CornerRadius="4" Padding="10">
+          <StackPanel>
+            <TextBlock x:Name="LogHeader" FontWeight="SemiBold" Margin="0,0,0,6" />
+            <TextBox x:Name="LogBox" Height="180" AcceptsReturn="True" IsReadOnly="True"
+                     TextWrapping="NoWrap" FontFamily="Consolas,Menlo,monospace" FontSize="11" />
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+
+    <ProgressBar x:Name="Progress" Grid.Row="2" Height="4" Margin="0,8,0,0"
+                 IsIndeterminate="True" IsVisible="False" />
+    <Button x:Name="RunButton" Grid.Row="3" HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center" Margin="0,8,0,0" Padding="0,8" />
+  </Grid>
+</Window>
