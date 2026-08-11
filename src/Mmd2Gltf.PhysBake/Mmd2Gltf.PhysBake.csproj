@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>physbake</AssemblyName>
+    <RootNamespace>Mmd2Gltf.PhysBake</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>11.0</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    物理エンジン本体は submodule (external/mmd-physics) をソース参照する。
+    ★複製を作らないこと: エンジンの実体は mmd2gltf-cs-physics 1つだけで、
+      このリポジトリはバージョン固定で参照するだけ。更新は submodule を進める。
+    UnityShim.cs はエンジンが参照する UnityEngine 型の最小シム
+    (Core/MathTypes.cs が UnityEngine.Vector3 等への明示変換を持つため必須)。
+  -->
+  <ItemGroup>
+    <Compile Include="..\..\external\mmd-physics\tools\compilecheck\UnityShim.cs">
+      <Link>Engine\UnityShim.cs</Link>
+    </Compile>
+    <Compile Include="..\..\external\mmd-physics\Assets\MmdPhysics\**\*.cs">
+      <Link>Engine\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

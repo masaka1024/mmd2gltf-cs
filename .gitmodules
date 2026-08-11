@@ -1,0 +1,3 @@
+[submodule "external/mmd-physics"]
+	path = external/mmd-physics
+	url = https://github.com/masaka1024/mmd2gltf-cs-physics.git

@@ -1,0 +1,10 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+
+# 出力・作業物
+*.glb
+!tests/**/*.glb
