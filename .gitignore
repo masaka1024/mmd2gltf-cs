@@ -8,3 +8,9 @@ artifacts/
 # 出力・作業物
 *.glb
 !tests/**/*.glb
+
+# 突合スクリプトが使うローカルのテストデータの場所 (個人のパスを載せない)
+tools/testdata.ps1
+# Python のキャッシュ
+__pycache__/
+*.pyc

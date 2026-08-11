@@ -6,41 +6,24 @@
 # (BDEF2 の 1.0-w を Python は float64 で計算するため。float32 では一致する)。
 param(
     [Parameter(Mandatory = $true)][string]$Work,
-    [string]$Mmd2Gltf = "C:\mytask2\mmd2gltf-gui",
+    [string]$Mmd2Gltf,
     [string[]]$Pmx,
     [string[]]$Vmd
 )
 
 $ErrorActionPreference = "Continue"
+# ★$PSScriptRoot は param() の既定値の中では使えない (param 評価時にはまだ未設定)。
+#   Python 版リポジトリは既定でこのリポジトリの隣にある想定。
+if (-not $Mmd2Gltf) {
+    $Mmd2Gltf = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) "mmd2gltf-gui"
+}
 $repo = Split-Path -Parent $PSScriptRoot
 New-Item -ItemType Directory -Force $Work | Out-Null
 
-if (-not $Pmx) {
-    $Pmx = @(
-        "C:\Users\masa_\Downloads\IA\IA\IA.pmx",
-        "C:\Users\masa_\Downloads\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00.pmx",
-        "C:\Users\masa_\Downloads\ぬこ式レーシングミク2023_ver1.01\ぬこ式レーシングミク2023_ver1.00\Racing_Miku2023.pmx",
-        "C:\Users\masa_\Downloads\コロン式++初音ミクV3_Re_rev.1.2\コロン式  初音ミクV3_Re_rev.1.2\コロン式  初音ミクV3_Re_rev.1.2(ノーマル).pmx",
-        "C:\Users\masa_\Downloads\Alicia\Alicia\MMD\Alicia_solid.pmx",
-        "C:\Users\masa_\Downloads\ゆかりver7\ゆかりver7\ゆかりver7.pmx",
-        "C:\Users\masa_\Downloads\つみ式ミクさんv4\つみ式ミクさんv4\つみ式ミクさんv4.pmx",
-        "C:\Users\masa_\Downloads\ぽんぷ長式初音ミク_テスト版_4\ぽんぷ長式初音ミク_テスト版_4\ぽんぷ長式初音ミク.pmx",
-        "C:\Users\masa_\Downloads\折岸みつ(0611)\折岸みつ(0611)\折岸みつ.pmx",
-        "C:\Users\masa_\Downloads\おナス式初音ミク(WhiteRose)ver0.2\おナス式初音ミク(WhiteRose)ver0.2\おナス式初音ミク(ホワイトローズ)ver0.2.pmx",
-        "C:\Users\masa_\Downloads\IAx改v1.5\IAx改v1.0s\IAx改v1.5[Fur_neko.fx].pmx",
-        "C:\Users\masa_\Downloads\mikuV4XS\mikuV4XS\tex\mikuV4XS.pmx",
-        "C:\mytask2\mmd2gltf-gui\tests\test.pmx"
-    )
-}
-if (-not $Vmd) {
-    $Vmd = @(
-        "C:\Users\masa_\Downloads\IA_Conqueror_Motion\IA_Conqueror_Motion\IA_Conqueror_light_version.vmd",
-        "C:\Users\masa_\Downloads\IA_Conqueror_Motion\IA_Conqueror_Motion\IA_Conqueror_full_key_version.vmd",
-        "C:\Users\masa_\Downloads\MMD4Mecanim_Beta_20201105\MMD4Mecanim_Beta_20201105\歩き.vmd",
-        "C:\Users\masa_\Downloads\Alicia\Alicia\MMD Motion\2分ループステップ1.vmd",
-        "C:\mytask2\mmd2gltf-gui\tests\test.vmd"
-    )
-}
+. (Join-Path $PSScriptRoot "_testdata.ps1")
+
+if (-not $Pmx) { $Pmx = $TdPmx }
+if (-not $Vmd) { $Vmd = $TdVmd }
 
 $fail = 0
 $i = 0

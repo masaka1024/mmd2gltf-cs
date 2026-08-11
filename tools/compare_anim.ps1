@@ -6,24 +6,23 @@
 # 長いモーションは -Step で間引く (IK の反復自体は間引いても同じように走る)。
 param(
     [Parameter(Mandatory = $true)][string]$Work,
-    [string]$Mmd2Gltf = "C:\mytask2\mmd2gltf-gui",
+    [string]$Mmd2Gltf,
     [int]$Step = 1
 )
 
 $ErrorActionPreference = "Continue"
+# ★$PSScriptRoot は param() の既定値の中では使えない (param 評価時にはまだ未設定)。
+#   Python 版リポジトリは既定でこのリポジトリの隣にある想定。
+if (-not $Mmd2Gltf) {
+    $Mmd2Gltf = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) "mmd2gltf-gui"
+}
 $repo = Split-Path -Parent $PSScriptRoot
 New-Item -ItemType Directory -Force $Work | Out-Null
 
 # モデル, モーション, 間引き
-$cases = @(
-    @("C:\mytask2\mmd2gltf-gui\tests\test.pmx", "C:\mytask2\mmd2gltf-gui\tests\test.vmd", 1),
-    @("C:\Users\masa_\Downloads\IA\IA\IA.pmx", "C:\Users\masa_\Downloads\MMD4Mecanim_Beta_20201105\MMD4Mecanim_Beta_20201105\歩き.vmd", 1),
-    @("C:\Users\masa_\Downloads\IA\IA\IA.pmx", "C:\Users\masa_\Downloads\IA_Conqueror_Motion\IA_Conqueror_Motion\IA_Conqueror_light_version.vmd", 20),
-    @("C:\Users\masa_\Downloads\Alicia\Alicia\MMD\Alicia_solid.pmx", "C:\Users\masa_\Downloads\Alicia\Alicia\MMD Motion\2分ループステップ1.vmd", 20),
-    @("C:\Users\masa_\Downloads\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00.pmx", "C:\Users\masa_\Downloads\MMD4Mecanim_Beta_20201105\MMD4Mecanim_Beta_20201105\歩き.vmd", 1),
-    @("C:\Users\masa_\Downloads\ぬこ式レーシングミク2023_ver1.01\ぬこ式レーシングミク2023_ver1.00\Racing_Miku2023.pmx", "C:\Users\masa_\Downloads\MMD4Mecanim_Beta_20201105\MMD4Mecanim_Beta_20201105\歩き.vmd", 1),
-    @("C:\Users\masa_\Downloads\ゆかりver7\ゆかりver7\ゆかりver7.pmx", "C:\Users\masa_\Downloads\Alicia\Alicia\MMD Motion\2分ループステップ1.vmd", 20)
-)
+. (Join-Path $PSScriptRoot "_testdata.ps1")
+
+$cases = $TdAnimCases
 
 $fail = 0
 $i = 0

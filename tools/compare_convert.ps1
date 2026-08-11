@@ -6,33 +6,22 @@
 # 揺れ物は physbake が後段で焼くため)。
 param(
     [Parameter(Mandatory = $true)][string]$Work,
-    [string]$Mmd2Gltf = "C:\mytask2\mmd2gltf-gui",
+    [string]$Mmd2Gltf,
     [switch]$KeepGlb
 )
 
 $ErrorActionPreference = "Continue"
+# ★$PSScriptRoot は param() の既定値の中では使えない (param 評価時にはまだ未設定)。
+#   Python 版リポジトリは既定でこのリポジトリの隣にある想定。
+if (-not $Mmd2Gltf) {
+    $Mmd2Gltf = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) "mmd2gltf-gui"
+}
 $repo = Split-Path -Parent $PSScriptRoot
 New-Item -ItemType Directory -Force $Work | Out-Null
 
-$walk = "C:\Users\masa_\Downloads\MMD4Mecanim_Beta_20201105\MMD4Mecanim_Beta_20201105\歩き.vmd"
+. (Join-Path $PSScriptRoot "_testdata.ps1")
 
-# モデル, モーション(空文字=アニメ無し), 追加オプション
-$cases = @(
-    @("C:\mytask2\mmd2gltf-gui\tests\test.pmx", "C:\mytask2\mmd2gltf-gui\tests\test.vmd", @()),
-    @("C:\Users\masa_\Downloads\IA\IA\IA.pmx", $walk, @()),
-    @("C:\Users\masa_\Downloads\IA\IA\IA.pmx", "", @("--morph-mode", "dense")),
-    @("C:\Users\masa_\Downloads\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00\Tda式初音ミクV4X_Ver1.00.pmx", $walk, @()),
-    @("C:\Users\masa_\Downloads\ぬこ式レーシングミク2023_ver1.01\ぬこ式レーシングミク2023_ver1.00\Racing_Miku2023.pmx", $walk, @()),
-    @("C:\Users\masa_\Downloads\コロン式++初音ミクV3_Re_rev.1.2\コロン式  初音ミクV3_Re_rev.1.2\コロン式  初音ミクV3_Re_rev.1.2(ノーマル).pmx", "", @()),
-    @("C:\Users\masa_\Downloads\Alicia\Alicia\MMD\Alicia_solid.pmx", "", @("--unlit")),
-    @("C:\Users\masa_\Downloads\ゆかりver7\ゆかりver7\ゆかりver7.pmx", "", @()),
-    @("C:\Users\masa_\Downloads\つみ式ミクさんv4\つみ式ミクさんv4\つみ式ミクさんv4.pmx", "", @()),
-    @("C:\Users\masa_\Downloads\ぽんぷ長式初音ミク_テスト版_4\ぽんぷ長式初音ミク_テスト版_4\ぽんぷ長式初音ミク.pmx", "", @()),
-    @("C:\Users\masa_\Downloads\折岸みつ(0611)\折岸みつ(0611)\折岸みつ.pmx", "", @()),
-    @("C:\Users\masa_\Downloads\おナス式初音ミク(WhiteRose)ver0.2\おナス式初音ミク(WhiteRose)ver0.2\おナス式初音ミク(ホワイトローズ)ver0.2.pmx", "", @()),
-    @("C:\Users\masa_\Downloads\IAx改v1.5\IAx改v1.0s\IAx改v1.5[Fur_neko.fx].pmx", "", @()),
-    @("C:\Users\masa_\Downloads\mikuV4XS\mikuV4XS\tex\mikuV4XS.pmx", "", @())
-)
+$cases = $TdConvertCases
 
 $fail = 0
 $i = 0
