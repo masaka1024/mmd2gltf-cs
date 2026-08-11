@@ -35,7 +35,7 @@ MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装
 | 2c | FK/IK アニメーションベイク | ✅ Python 版と一致 |
 | 2d | glTF ライタと変換本体 | ✅ Python 版と一致 |
 | 3 | convert と physbake を1コマンドに統合 | ✅ 動作 |
-| 4 | GUI (Avalonia / Windows・macOS・Linux) | ✅ 動作 (macOS は未検証) |
+| 4 | GUI (Avalonia / Windows・macOS・Linux) | ✅ 動作 (Windows・macOS で実機確認済み) |
 
 ```
 src/
@@ -80,7 +80,7 @@ dotnet run --project src/Mmd2Gltf.Gui
 
 Avalonia (MIT) なので Windows / macOS / Linux で同じコードが動く。
 依存はすべてマネージド (ImageSharp / Pfim / エンジン本体) でネイティブ依存は無い。
-**ただし macOS では未検証** — 手元に Mac が無く、動作確認は Windows のみ。
+**Windows と macOS で実機動作を確認済み** (2026-08-11)。Linux は未検証。
 
 配布用にビルドする場合:
 
