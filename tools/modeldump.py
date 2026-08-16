@@ -47,7 +47,9 @@ def main():
         model = importlib.import_module("mmd2gltf.pmx").parse_pmx(a.input)
         motion = importlib.import_module("mmd2gltf.vmd").parse_vmd(a.vmd)
         bake = importlib.import_module("mmd2gltf.animation").bake
-        times, out, unmatched = bake(
+        # bake() は 2026-08-17 の修正で ignored_translation を追加して4値になった
+        # (移動可でないボーンの VMD 移動値を MMD 同様に捨てる件)。
+        times, out, unmatched, _ignored_t = bake(
             model, motion, solve_ik=not a.no_ik, step=a.step,
             disable_ik=a.disable_ik, use_vmd_ik_frames=not a.ignore_vmd_ik)
         data = {

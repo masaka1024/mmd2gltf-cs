@@ -621,6 +621,16 @@ namespace Mmd2Gltf.Conversion
                     ["commentEn"] = model.CommentEn,
                     ["morphs"] = morphExtras,
                     ["displayFrames"] = JsonSerializer.SerializeToNode(model.DisplayFrames, MmdJson.Options),
+                    // ボーンの基本情報 (PMX 生値)。受け手が「移動可(0x0004)か」等を
+                    // 剛体の有無から推測せず仕様どおり判定できるようにする。
+                    // 並びは glTF の nodes[0..len(bones)-1] と同順 (= PMX ボーン順)。
+                    ["bones"] = new JsonArray(model.Bones.Select(b => (JsonNode)new JsonObject
+                    {
+                        ["name"] = b.Name,
+                        ["nameEn"] = b.NameEn,
+                        ["flags"] = b.Flags,
+                        ["parent"] = b.Parent,
+                    }).ToArray()),
                     ["rigidBodies"] = JsonSerializer.SerializeToNode(model.RigidBodies, MmdJson.Options),
                     ["joints"] = JsonSerializer.SerializeToNode(model.Joints, MmdJson.Options),
                 };
@@ -681,6 +691,11 @@ namespace Mmd2Gltf.Conversion
                     (i, n) => log($"  baking frame {i}/{n}"));
                 if (baked.UnmatchedVmdBones.Count > 0)
                     log($"  {baked.UnmatchedVmdBones.Count} VMD bone tracks had no matching PMX bone");
+                if (baked.IgnoredTranslationBones.Count > 0)
+                    log($"  {baked.IgnoredTranslationBones.Count} VMD track(s) carried translation on " +
+                        "non-movable bones -- ignored (MMD semantics): " +
+                        string.Join(", ", baked.IgnoredTranslationBones.Take(8)) +
+                        (baked.IgnoredTranslationBones.Count > 8 ? " ..." : ""));
 
                 // 揺れ物の物理。物理ボーンの姿勢は FK ではなくエンジンの結果で差し替える。
                 Mmd2Gltf.Physics.PhysicsPassResult phys = null;

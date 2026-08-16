@@ -30,6 +30,8 @@ namespace Mmd2Gltf.Animation
         public double[] Times;                              // 秒
         public Dictionary<int, BakedBoneTrack> Bones = new(); // ボーン index -> トラック
         public List<string> UnmatchedVmdBones = new();      // PMX に無かった VMD トラック名
+        /// <summary>移動可でないのに VMD が移動値を持っていたボーン名 (移動は無視した)。</summary>
+        public List<string> IgnoredTranslationBones = new();
     }
 
     /// <summary>1ボーン分の VMD キー列。MMD のベジェ補間つき。</summary>
@@ -98,6 +100,11 @@ namespace Mmd2Gltf.Animation
         public readonly int[] Order;       // 変形順 (物理後, 変形階層, index)
         public Quatd[] LocalQ;
         public Vec3d[] LocalT;             // アニメによるオフセット (rest に加算)
+        /// <summary>移動可フラグ(0x0004)。MMD は移動可でないボーンの VMD 移動値を
+        /// 適用しないため、ベイクでも同じ扱いにする (適用すると、物理焼き込み系ツールが
+        /// 書き出したフルキー VMD に残る移動値が回転専用ボーンへ乗り、glTF 側で
+        /// translation チャンネルとして出力され、受け手の物理・姿勢参照を壊す)。</summary>
+        public readonly bool[] Movable;
 
         private readonly Quatd[] _worldQ;
         private readonly Vec3d[] _worldP;
@@ -107,6 +114,8 @@ namespace Mmd2Gltf.Animation
         {
             _bones = bones;
             int n = bones.Count;
+            Movable = new bool[n];
+            for (int i = 0; i < n; i++) Movable[i] = (bones[i].Flags & 0x0004) != 0;
             Rest = new Vec3d[n];
             for (int i = 0; i < n; i++)
             {
@@ -171,7 +180,7 @@ namespace Mmd2Gltf.Animation
             Reset();
             foreach (var kv in sampled)
             {
-                LocalT[kv.Key] = kv.Value.pos;
+                if (Movable[kv.Key]) LocalT[kv.Key] = kv.Value.pos;
                 LocalQ[kv.Key] = kv.Value.rot.Normalized;
             }
 
@@ -274,8 +283,26 @@ namespace Mmd2Gltf.Animation
             foreach (var kv in vmd.Bones)
             {
                 var key = MmdEncoding.TruncatedKey(kv.Key, 15);
-                if (nameMap.TryGetValue(key, out int bi)) tracks[bi] = new Track(kv.Value);
-                else result.UnmatchedVmdBones.Add(kv.Key);
+                if (!nameMap.TryGetValue(key, out int bi))
+                {
+                    result.UnmatchedVmdBones.Add(kv.Key);
+                    continue;
+                }
+                tracks[bi] = new Track(kv.Value);
+
+                // 移動可(0x0004)でないボーンのトラックに移動値が入っている場合、その移動値は
+                // MMD 同様に適用しない (Skeleton.Movable 参照)。ここでは報告用に数えるだけ。
+                if ((bones[bi].Flags & 0x0004) == 0)
+                {
+                    foreach (var k in kv.Value)
+                    {
+                        if (Math.Abs(k.Pos[0]) + Math.Abs(k.Pos[1]) + Math.Abs(k.Pos[2]) > 1e-9)
+                        {
+                            result.IgnoredTranslationBones.Add(bones[bi].Name);
+                            break;
+                        }
+                    }
+                }
             }
 
             var sk = new Skeleton(bones);
