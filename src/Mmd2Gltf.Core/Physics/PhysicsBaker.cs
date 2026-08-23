@@ -17,13 +17,13 @@ namespace Mmd2Gltf.Physics
 {
     public sealed class BakeOptions
     {
-        /// <summary>内部固定刻み [Hz]。0 = エンジン既定 (30Hz)。</summary>
+        /// <summary>内部固定刻み [Hz]。0 = エンジン既定。</summary>
         public float SimHz = 0f;
-        /// <summary>1 固定ステップあたりのサブステップ数。0 = エンジン既定 (2)。</summary>
+        /// <summary>1 固定ステップあたりのサブステップ数。0 = エンジン既定。</summary>
         public int SubSteps = 0;
-        /// <summary>ソルバ反復数。0 = エンジン既定 (10)。</summary>
+        /// <summary>ソルバ反復数。0 = エンジン既定。</summary>
         public int SolverIterations = 0;
-        /// <summary>重力の大きさ (MMD スケール, 正の値)。0 = エンジン既定 (98)。</summary>
+        /// <summary>重力の大きさ (MMD スケール, 正の値)。0 = エンジン既定。</summary>
         public float Gravity = 0f;
         /// <summary>フレーム0の姿勢で空回しする秒数 (初期過渡を捨てる)。</summary>
         public float WarmupSeconds = 2.0f;
@@ -43,6 +43,17 @@ namespace Mmd2Gltf.Physics
         public int StepCount;
         public double Seconds;
         public string NanBone;      // 発散を検出したボーン名 (無ければ null)
+
+        // --- 実際に使われた設定 -------------------------------------------
+        // ★エンジン既定をここに写経しないこと。0 指定時の既定を持っているのは
+        //   エンジン側 (PhysicsWorld のフィールド初期化子) だけで、過去に
+        //   SubSteps 2 -> 4 の変更 (physics 5396f63) を取りこぼし、GLB に
+        //   残す由来情報が実際と食い違っていた。記録側は必ずこの実効値を使う。
+        public float FixedTimeStep;   // エンジンが実際に刻んだ秒数 (これが実体)
+        public float SimHz;              // 1/FixedTimeStep を丸めた表示用の値
+        public int SubSteps;
+        public int SolverIterations;
+        public float Gravity;
     }
 
     public static class PhysicsBaker
@@ -75,6 +86,12 @@ namespace Mmd2Gltf.Physics
                 BoneWorld = new RigidTransform[frames][],
             };
             physicsBoneSet.CopyTo(result.PhysicsBones);
+
+            result.FixedTimeStep = world.FixedTimeStep;
+            result.SimHz = (float)Math.Round(1.0 / world.FixedTimeStep, 3);
+            result.SubSteps = world.SubSteps;
+            result.SolverIterations = world.SolverIterations;
+            result.Gravity = -world.Gravity.y;
 
             log?.Invoke($"  剛体 {model.RigidBodies.Count} / Joint {model.Joints.Count} / 物理ボーン {result.PhysicsBones.Length}");
             log?.Invoke($"  刻み 1/{1f / world.FixedTimeStep:F0}s x {world.SubSteps}サブ, ソルバ反復 {world.SolverIterations}, 重力 {-world.Gravity.y:F1}");

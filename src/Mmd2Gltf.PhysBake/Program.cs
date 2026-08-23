@@ -40,10 +40,10 @@ namespace Mmd2Gltf
   -o, --output <path>   出力 GLB (既定: <入力>_phys.glb)
       --animation <N>   対象アニメーション index (既定: 0)
       --warmup <秒>     フレーム0姿勢での空回し秒数 (既定: 2.0)
-      --sim-hz <Hz>     内部固定刻み (既定: エンジン既定 30)
-      --substeps <N>    1ステップあたりのサブステップ数 (既定: エンジン既定 2)
-      --iterations <N>  ソルバ反復数 (既定: エンジン既定 10)
-      --gravity <G>     重力の大きさ・MMDスケール (既定: エンジン既定 98)
+      --sim-hz <Hz>     内部固定刻み (既定: エンジン既定)
+      --substeps <N>    1ステップあたりのサブステップ数 (既定: エンジン既定)
+      --iterations <N>  ソルバ反復数 (既定: エンジン既定)
+      --gravity <G>     重力の大きさ・MMDスケール (既定: エンジン既定)
       --no-bone-merge   PMX mode2 (物理演算+ボーン位置合わせ) を無効にする
       --align-bones     全物理ボーンに位置合わせ補正を適用する (既定 OFF)
       --dry-run         GLB を書かずに計算と統計だけ出す
@@ -325,8 +325,11 @@ namespace Mmd2Gltf
             {
                 ["engine"] = "mmd2gltf-cs-physics",
                 ["bones"] = bake.PhysicsBones.Length,
-                ["simHz"] = opt.SimHz > 0 ? opt.SimHz : 30f,
-                ["subSteps"] = opt.SubSteps > 0 ? opt.SubSteps : 2,
+                ["simHz"] = bake.SimHz,
+                ["fixedTimeStep"] = bake.FixedTimeStep,
+                ["subSteps"] = bake.SubSteps,
+                ["solverIterations"] = bake.SolverIterations,
+                ["gravity"] = bake.Gravity,
                 ["warmupSeconds"] = opt.WarmupSeconds,
                 ["boneMergeMode"] = opt.BoneMergeMode,
                 ["alignBonePositions"] = opt.AlignBonePositions,
