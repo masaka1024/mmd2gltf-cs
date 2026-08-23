@@ -9,6 +9,13 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>11.0</LangVersion>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <Description>Bake MMD rigid-body physics into a glTF animation</Description>
+    <Product>mmd2gltf</Product>
+    <Company>masaka1024</Company>
+    <Authors>masaka1024</Authors>
+    <Copyright>Copyright (c) 2026 masaka1024</Copyright>
+    <Version>0.1.0</Version>
+    <ApplicationIcon>..\..\assets\mmd2gltf.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

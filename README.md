@@ -77,6 +77,20 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 > (もし将来どちらか一方を Private に戻すなら、submodule 側が Private だと
 >  他人の `clone --recursive` が submodule の取得で止まる点に注意。)
 
+### リリース用の実行形式
+
+```powershell
+pwsh tools/make_release.ps1
+```
+
+自己完結・単一ファイルで publish し、`artifacts/` に zip を作る。
+利用者は .NET のインストール不要で、exe 1つで動く。
+`-Rid osx-arm64` 等で他プラットフォームも作れる (クロスビルドは通るが、
+Windows 以外は実機確認していない)。
+
+アイコンは `assets/mmd2gltf.ico`。Python 版 (mmd2gltf-gui) のアイコンに
+C# バッジを足したもので、マスターは `assets/mmd2gltf.png` (1024px)。
+
 ### GUI
 
 ```bash

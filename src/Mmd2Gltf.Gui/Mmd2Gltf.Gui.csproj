@@ -5,6 +5,14 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>11.0</LangVersion>
+    <AssemblyName>mmd2gltf-gui</AssemblyName>
+    <Description>MMD (PMX/VMD) -> glTF 2.0 converter (GUI)</Description>
+    <Product>mmd2gltf</Product>
+    <Company>masaka1024</Company>
+    <Authors>masaka1024</Authors>
+    <Copyright>Copyright (c) 2026 masaka1024</Copyright>
+    <Version>0.1.0</Version>
+    <ApplicationIcon>..\..\assets\mmd2gltf.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.3" />
@@ -13,5 +21,13 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mmd2Gltf.Core\Mmd2Gltf.Core.csproj" />
+  </ItemGroup>
+
+  <!-- ウィンドウ/タスクバーのアイコン。ApplicationIcon (exe のリソース) とは
+       別枠なので、同じ .ico を Avalonia のリソースとしても埋める。 -->
+  <ItemGroup>
+    <AvaloniaResource Include="..\..\assets\mmd2gltf.ico">
+      <Link>Assets\mmd2gltf.ico</Link>
+    </AvaloniaResource>
   </ItemGroup>
 </Project>
