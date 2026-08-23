@@ -1,6 +1,6 @@
 // ===========================================================================
-// mmd2gltf CLI。ステージ3で PMX→glTF 変換の入口になる。
-// 現在は移植中のため、Python 版と突合するための検証サブコマンドだけがある。
+// mmd2gltf CLI。PMX→glTF 変換の入口。
+// convert が本体で、残りは Python 版と突合するための検証サブコマンド。
 // ===========================================================================
 using System;
 
@@ -35,11 +35,14 @@ namespace Mmd2Gltf.Cli
             }
         }
 
-        private static void Usage() => Console.WriteLine(@"mmd2gltf (C#版・移植中)
+        private static readonly string Ver =
+            typeof(Program).Assembly.GetName().Version is { } v ? $"{v.Major}.{v.Minor}.{v.Build}" : "?";
+
+        private static void Usage() => Console.WriteLine($@"mmd2gltf {Ver} — MMD (PMX/VMD) を glTF 2.0 (.glb) へ変換する
 
   mmd2gltf convert <model.pmx> [--vmd <motion.vmd>] [-o out.glb] [オプション]
                                    PMX (+VMD) を glTF 2.0 (.glb) へ変換する
-                                   (揺れ物の物理は physbake が後段で焼く)
+                                   (--bake-physics で揺れ物の物理も同時に焼ける)
 
   -- 以下は Python 版との突合用の検証コマンド --
   mmd2gltf texdump <dir|file>...   テクスチャの分類結果を JSON で出す
