@@ -35,6 +35,21 @@ MMD (PMX/VMD) → glTF 2.0 変換ツールの **C# 版**。
 
 MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装です。
 
+## 変換した .glb を確認する
+
+変換結果は [FacetGL](https://github.com/masaka1024/facetgl) で、`extras.mmd` の材質
+(トゥーン・スフィア・エッジ) を使った **MMD の見た目のまま** 確認できます。
+一般的な glTF ビューアでは unlit の平坦な表示になりますが、FacetGL は `extras.mmd` から
+MMD と同じ式でシェーディングを組み立て直します。
+
+- **Web 版: <https://masaka1024.github.io/facetgl/>** — インストール不要。`.glb` をブラウザにドロップするだけ。
+  ファイルはブラウザ内だけで読み込まれ、どこにも送信されません
+- **デスクトップ版 (Windows)**: [Releases](https://github.com/masaka1024/facetgl/releases)
+
+モーション入りの `.glb` はそのまま再生できます。「MMD表示」ボタンで glTF 標準表示と切り替えて比べられ、
+情報パネルでは `extras.mmd` の内容 (MMD 材質・ボーン・モーフ・剛体/ジョイントの数など) を確認できます。
+変換した `.glb` の URL やファイルを渡せば、相手も MMD の見た目のまま見られます。
+
 ## なぜ作り直すのか
 
 先行する Python 実装 [mmd2gltf-gui](https://github.com/masaka1024/mmd2gltf-gui) は
