@@ -75,7 +75,7 @@ namespace Mmd2Gltf
                 try
                 {
                     foreach (string e in Directory.EnumerateFileSystemEntries(cur))
-                        if (string.Equals(Path.GetFileName(e), part, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(Nfc(Path.GetFileName(e)), Nfc(part), StringComparison.OrdinalIgnoreCase))
                         { match = Path.GetFileName(e); break; }
                 }
                 catch (IOException) { return null; }
@@ -84,6 +84,55 @@ namespace Mmd2Gltf
                 cur = Path.Combine(cur, match);
             }
             return File.Exists(cur) ? cur : null;
+        }
+
+        // macOS では濁点・半濁点を「が」= 「か」+「゛」のように分解した形 (NFD) で
+        // ファイル名を持つことがある。PMX 側は合成済みの形 (NFC) なので、
+        // 見た目が同じでも文字列比較では一致しない。比較の前に NFC へ揃える。
+        // (Windows では元々 NFC なので結果は変わらない)
+        // ★string.Normalize は使わない: CLI / physbake は InvariantGlobalization=true
+        //   なので Normalize が何もしない。かな の濁点・半濁点だけ自前で合成する。
+        internal static string Nfc(string s)
+        {
+            if (s == null || (s.IndexOf('゙') < 0 && s.IndexOf('゚') < 0)) return s;
+            var sb = new System.Text.StringBuilder(s.Length);
+            foreach (char c in s)
+            {
+                if (sb.Length > 0 && (c == '゙' || c == '゚'))
+                {
+                    char prev = sb[sb.Length - 1];
+                    char composed = ComposeKana(prev, c == '゙');
+                    if (composed != '\0') { sb[sb.Length - 1] = composed; continue; }
+                }
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
+
+        // 清音 + 濁点(゛) / 半濁点(゜) → 合成済みの1文字。合成できなければ '\0'。
+        private static char ComposeKana(char c, bool dakuten)
+        {
+            const string kaToTo = "かきくけこさしすせそたちつてと" + "カキクケコサシスセソタチツテト";
+            const string haToHo = "はひふへほ" + "ハヒフヘホ";
+            if (dakuten)
+            {
+                // Unicode では「か」の直後が「が」のように、濁音は清音の +1 に並ぶ。
+                if (kaToTo.IndexOf(c) >= 0 || haToHo.IndexOf(c) >= 0) return (char)(c + 1);
+                switch (c)
+                {
+                    case 'う': return 'ゔ';
+                    case 'ウ': return 'ヴ';
+                    case 'ワ': return 'ヷ';
+                    case 'ヰ': return 'ヸ';
+                    case 'ヱ': return 'ヹ';
+                    case 'ヲ': return 'ヺ';
+                    case 'ゝ': return 'ゞ';
+                    case 'ヽ': return 'ヾ';
+                }
+                return '\0';
+            }
+            // 半濁音は清音の +2 (は→ぱ)。
+            return haToHo.IndexOf(c) >= 0 ? (char)(c + 2) : '\0';
         }
 
         // ------------------------------------------------------------------
