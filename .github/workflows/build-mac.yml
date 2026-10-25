@@ -1,0 +1,38 @@
+# macOS 版を GitHub の Mac (Apple Silicon) でビルドする。
+#
+# 動くタイミング:
+#   - main / mac-release-script ブランチに push したとき
+#   - Actions タブの「Run workflow」ボタンを押したとき
+#
+# できたものは、実行結果ページ下部の「Artifacts」からダウンロードできる。
+
+name: Build macOS
+
+on:
+  push:
+    branches: [main, mac-release-script]
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest   # Apple Silicon の Mac
+    steps:
+      - name: リポジトリを取得 (物理エンジンの submodule も)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: .NET 9 SDK を用意
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Mac 用の .app と zip を作る
+        run: bash tools/make_mac_app.sh osx-arm64
+
+      - name: できた zip を保存
+        uses: actions/upload-artifact@v4
+        with:
+          name: mmd2gltf-cs-osx-arm64
+          path: artifacts/*.zip
+          if-no-files-found: error
