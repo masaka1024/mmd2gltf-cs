@@ -14,7 +14,7 @@
     <Company>masaka1024</Company>
     <Authors>masaka1024</Authors>
     <Copyright>Copyright (c) 2026 masaka1024</Copyright>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <ApplicationIcon>..\..\assets\mmd2gltf.ico</ApplicationIcon>
   </PropertyGroup>
 
