@@ -35,6 +35,20 @@ MMD (PMX/VMD) → glTF 2.0 変換ツールの **C# 版**。
 
 MMD/MikuMikuDance および PmxEditor とは無関係の非公式・独立実装です。
 
+## ダウンロード
+
+[Releases](https://github.com/masaka1024/mmd2gltf-cs/releases) から使う環境のものを取る。
+どれも .NET のインストール不要。
+
+| 環境 | ファイル | 中身 |
+|---|---|---|
+| Windows (x64) | `mmd2gltf-cs-<ver>-win-x64.zip` | `mmd2gltf-gui.exe` / `mmd2gltf.exe` / `physbake.exe` |
+| macOS (Apple Silicon) | `mmd2gltf-cs-<ver>-osx-arm64.dmg` | `mmd2gltf.app` と `cli/` (`mmd2gltf` / `physbake`) |
+| macOS (Intel) | `mmd2gltf-cs-<ver>-osx-x64.dmg` | 同上 |
+
+macOS 版は `mmd2gltf.app` を `Applications` へドラッグする。
+Apple の公証を受けていないので、初回は右クリック →「開く」で起動する。
+
 ## 変換した .glb を確認する
 
 変換結果は [FacetGL](https://github.com/masaka1024/facetgl) で、`extras.mmd` の材質
@@ -123,14 +137,27 @@ dotnet build -c Release src/Mmd2Gltf.PhysBake
 
 ### リリース用の実行形式
 
+`v0.2.0` のようなタグを push すると、GitHub Actions
+([`.github/workflows/release.yml`](.github/workflows/release.yml)) が
+Windows 版 zip と macOS 版 dmg (Apple Silicon / Intel) をまとめてビルドし、
+そのタグの Release に添付する (Release が無ければ draft で作る)。
+バージョンは csproj の `<Version>` から取るので、タグの前に上げておく。
+PR でも同じビルドが走り、成果物は run に添付される。
+
+手元で作る場合:
+
 ```powershell
-pwsh tools/make_release.ps1
+pwsh tools/make_release.ps1                # Windows: artifacts/ に zip
 ```
 
-自己完結・単一ファイルで publish し、`artifacts/` に zip を作る。
-利用者は .NET のインストール不要で、exe 1つで動く。
-`-Rid osx-arm64` 等で他プラットフォームも作れる (クロスビルドは通るが、
-Windows 以外は実機確認していない)。
+```bash
+tools/make_macos_app.sh osx-arm64          # macOS: artifacts/ に .app 入りの dmg
+tools/make_macos_app.sh osx-x64
+```
+
+どちらも自己完結で publish するので、利用者は .NET のインストール不要。
+macOS 版は GUI を `.app` (アイコン付き・ad-hoc 署名) に包み、CLI は `cli/` に置く。
+`make_macos_app.sh` は sips / iconutil / hdiutil を使うので macOS 上でしか動かない。
 
 アイコンは `assets/mmd2gltf.ico`。Python 版 (mmd2gltf-gui) のアイコンに
 C# バッジを足したもので、マスターは `assets/mmd2gltf.png` (1024px)。
@@ -162,17 +189,7 @@ Avalonia (MIT) なので Windows / macOS / Linux で同じコードが動く。
 依存はすべてマネージド (ImageSharp / Pfim / エンジン本体) でネイティブ依存は無い。
 **Windows と macOS で実機動作を確認済み** (2026-08-11)。Linux は未検証。
 
-配布用にビルドする場合:
-
-```bash
-dotnet publish src/Mmd2Gltf.Gui -c Release -r win-x64   --self-contained -p:PublishSingleFile=true
-dotnet publish src/Mmd2Gltf.Gui -c Release -r osx-arm64 --self-contained
-dotnet publish src/Mmd2Gltf.Gui -c Release -r osx-x64   --self-contained
-```
-
-macOS で普通のアプリとして扱うには、出力を `.app` バンドル
-(`Contents/MacOS/` に実行ファイル + `Contents/Info.plist`) に包む必要がある。
-未署名なので初回は右クリック →「開く」で起動する。
+配布用のビルドは上の「リリース用の実行形式」を参照。
 
 ### CLI
 

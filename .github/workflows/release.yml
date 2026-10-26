@@ -1,0 +1,84 @@
+# Windows 版と macOS 版の配布物をまとめてビルドする。
+#   - Windows:  mmd2gltf-cs-<ver>-win-x64.zip     (tools/make_release.ps1)
+#   - macOS:    mmd2gltf-cs-<ver>-osx-arm64.dmg   (Apple Silicon, tools/make_macos_app.sh)
+#               mmd2gltf-cs-<ver>-osx-x64.dmg     (Intel)
+#
+# いつ動くか:
+# - Pull request: 全部ビルドして壊れていないか確認する。成果物は run に添付される。
+# - "v0.2.0" のようなタグを push: 全部をそのタグの GitHub Release に追加する
+#   (Release が無ければ draft で作る)。
+# - 手動実行 (Actions タブの "Run workflow"): 全部ビルドする。release_tag を入れると
+#   (例 v0.2.0) 既存の Release にも追加する。
+#
+# ★Version は csproj の <Version> から取る。タグを打つ前に csproj 側を上げておくこと。
+name: Build release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Add the files to this release (e.g. v0.2.0). Leave empty to only build.'
+        required: false
+        default: ''
+  pull_request:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: win-x64
+            os: windows-latest
+            run: pwsh tools/make_release.ps1 -Rid win-x64
+            file: artifacts/*-win-x64.zip
+          - name: osx-arm64
+            os: macos-latest
+            run: tools/make_macos_app.sh osx-arm64
+            file: artifacts/*-osx-arm64.dmg
+          - name: osx-x64
+            os: macos-latest
+            run: tools/make_macos_app.sh osx-x64
+            file: artifacts/*-osx-x64.dmg
+
+    name: Build (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    env:
+      # タグ push ならそのタグ、手動実行なら release_tag (空なら Release には触らない)
+      RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.release_tag }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Build
+        shell: bash
+        run: ${{ matrix.run }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mmd2gltf-cs-${{ matrix.name }}
+          path: ${{ matrix.file }}
+          compression-level: 0
+
+      - name: Add to release
+        if: env.RELEASE_TAG != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 3 ジョブが同時に来うる。後から来た方は既存の Release を見つけるだけ。
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 \
+            || gh release create "$RELEASE_TAG" --draft --title "$RELEASE_TAG" --notes "" \
+            || gh release view "$RELEASE_TAG" >/dev/null
+          gh release upload "$RELEASE_TAG" ${{ matrix.file }} --clobber
