@@ -58,7 +58,7 @@ MMD と同じ式でシェーディングを組み立て直します。
 
 - **Web 版: <https://masaka1024.github.io/facetgl/>** — インストール不要。`.glb` をブラウザにドロップするだけ。
   ファイルはブラウザ内だけで読み込まれ、どこにも送信されません
-- **デスクトップ版 (Windows)**: [Releases](https://github.com/masaka1024/facetgl/releases)
+- **デスクトップ版 (Windows / macOS)**: [Releases](https://github.com/masaka1024/facetgl/releases)
 
 モーション入りの `.glb` はそのまま再生できます。「MMD表示」ボタンで glTF 標準表示と切り替えて比べられ、
 情報パネルでは `extras.mmd` の内容 (MMD 材質・ボーン・モーフ・剛体/ジョイントの数など) を確認できます。
