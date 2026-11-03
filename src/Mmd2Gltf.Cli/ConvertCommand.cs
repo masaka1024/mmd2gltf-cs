@@ -26,6 +26,7 @@ namespace Mmd2Gltf.Cli
       --anim-name <NAME>    アニメーション名
       --alpha-mode <MODE>   auto|opaque|mask|blend (既定 auto)
       --no-custom-attrs     MMD 固有の頂点属性 (_SDEF_* 等) を省く
+                            (SDEF/追加UV/エッジ倍率は extras.mmd に無いため失われる)
       --force-double-sided  全材質を両面描画にする
       --morph-mode <MODE>   sparse|dense|none (既定 sparse)
       --scale <F>           MMD 単位 → glTF 単位 (既定 0.08)

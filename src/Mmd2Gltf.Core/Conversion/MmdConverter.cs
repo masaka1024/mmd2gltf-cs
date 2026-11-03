@@ -6,7 +6,11 @@
 //     クォータニオン : (x, y, z, w) -> (-x, -y, z, w)
 //     三角形の巻き順 : (a, b, c) -> (a, c, b)
 // glTF が素で表せないもの (IK, 物理, スフィア/トゥーン, 材質・ボーンモーフ,
-// SDEF, 表示枠, ...) は MMD 座標系のまま extras.mmd に載せて保存する。
+// 表示枠, ...) は MMD 座標系のまま extras.mmd に載せて保存する。
+// 頂点単位の MMD データ (SDEF の C/R0/R1, 追加UV, エッジ倍率, ウェイト種別) は
+// extras.mmd には入らず、カスタム頂点属性 (_SDEF_C/_SDEF_R0/_SDEF_R1 は glTF 座標系・
+// スケール適用済み, _ADDUV1..4, _EDGESCALE, _WEIGHTTYPE) として出力する。
+// CustomAttrs=false (--no-custom-attrs) のときはこれらは出力されない。
 //
 // 揺れ物の物理はここでは焼かない。PMX の剛体/Joint は extras.mmd に載るので、
 // physbake (自作エンジン) が後段でアニメーションチャンネルを差し替える。
