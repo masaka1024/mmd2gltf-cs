@@ -45,7 +45,8 @@ namespace Mmd2Gltf.Gui
             ["adv_no_extras"] = "extras.mmd を出力しない",
             ["adv_no_custom_attrs"] =
                 "MMD固有の頂点属性を省略\n" +
-                "  ※Blenderで「メッシュを読み込めない」エラーが出る場合はこれをON",
+                "  ※Blenderで「メッシュを読み込めない」エラーが出る場合はこれをON\n" +
+                "  ※ONにするとSDEF・追加UV・エッジ倍率は出力されません",
             ["adv_disable_ik_label"] = "無効化するIK名(カンマ区切り)",
             ["adv_step_label"] = "サンプリング間隔",
             ["adv_anim_name_label"] = "アニメーション名",
@@ -114,7 +115,8 @@ namespace Mmd2Gltf.Gui
             ["adv_no_extras"] = "Don't output extras.mmd",
             ["adv_no_custom_attrs"] =
                 "Omit MMD-specific vertex attributes\n" +
-                "  Turn this on if Blender fails to load the mesh",
+                "  Turn this on if Blender fails to load the mesh\n" +
+                "  When on, SDEF / additional UVs / edge scale are not written",
             ["adv_disable_ik_label"] = "IK names to disable (comma-separated)",
             ["adv_step_label"] = "Sampling step",
             ["adv_anim_name_label"] = "Animation clip name",
