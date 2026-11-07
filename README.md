@@ -1,5 +1,7 @@
 # mmd2gltf-cs
 
+**日本語** | [English](README.en.md)
+
 <!-- mmd2gltf-ecosystem:start -->
 > **mmd2gltf エコシステム** — MMD モデル(PMX/VMD)を一度 `.glb` に変換すれば、**Unity・Unreal Engine 5・Blender** のどれにも、物理(揺れ物)と材質(トゥーン/スフィア)つきでそのまま持ち込めます。glTF で表現できない MMD 固有データは `extras.mmd` に元の値のまま残り、各インポーターがそれを読んでエンジン側で再構築します。
 >
