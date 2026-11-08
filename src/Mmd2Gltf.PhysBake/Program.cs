@@ -46,16 +46,42 @@ namespace Mmd2Gltf
       --gravity <G>     重力の大きさ・MMDスケール (既定: エンジン既定)
       --no-bone-merge   PMX mode2 (物理演算+ボーン位置合わせ) を無効にする
       --align-bones     全物理ボーンに位置合わせ補正を適用する (既定 OFF)
+      --playback        再生側 (UE/Blender ネイティブ) と同じ設定にする:
+                        60Hz x 2サブ, ソルバ10, ジョイント速度反復40, 最大補正速度30,
+                        split impulse (接触/ジョイント) ON, 位置合わせ回転クランプ 0.5
+      --dump-fk <csv>   FK 結果 (物理前の world) を CSV 出力 (float32 を Hex8)
+      --dump-bake <csv> ベイク後の最終 world を CSV 出力 (float32 を Hex8)
       --dry-run         GLB を書かずに計算と統計だけ出す
   -q, --quiet           進捗ログを出さない
   -h, --help            このヘルプ");
+        }
+
+        private static string H(float v) =>
+            BitConverter.SingleToInt32Bits(v).ToString("X8", CultureInfo.InvariantCulture);
+
+        // 全フレーム x 全ボーン (フレーム順 -> ボーン index 順)。raw PMX 空間の pose を float32 ビットで出す。
+        private static void DumpCsv(string path, RigidTransform[][] world, int nb)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append("frame,bone,px,py,pz,qx,qy,qz,qw\n");
+            for (int f = 0; f < world.Length; f++)
+                for (int b = 0; b < nb; b++)
+                {
+                    var t = world[f][b];
+                    sb.Append(f).Append(',').Append(b)
+                      .Append(',').Append(H(t.Origin.x)).Append(',').Append(H(t.Origin.y)).Append(',').Append(H(t.Origin.z))
+                      .Append(',').Append(H(t.Rotation.x)).Append(',').Append(H(t.Rotation.y))
+                      .Append(',').Append(H(t.Rotation.z)).Append(',').Append(H(t.Rotation.w)).Append('\n');
+                }
+            File.WriteAllText(path, sb.ToString(), new System.Text.UTF8Encoding(false));
         }
 
         private static int Run(string[] args)
         {
             string input = null, output = null;
             int animIndex = 0;
-            bool quiet = false, dryRun = false;
+            bool quiet = false, dryRun = false, playback = false;
+            string dumpFk = null, dumpBake = null;
             var opt = new BakeOptions();
 
             for (int i = 0; i < args.Length; i++)
@@ -78,6 +104,9 @@ namespace Mmd2Gltf
                     case "--gravity": opt.Gravity = NextF(a); break;
                     case "--no-bone-merge": opt.BoneMergeMode = false; break;
                     case "--align-bones": opt.AlignBonePositions = true; break;
+                    case "--playback": playback = true; break;
+                    case "--dump-fk": dumpFk = Next(a); break;
+                    case "--dump-bake": dumpBake = Next(a); break;
                     case "--dry-run": dryRun = true; break;
                     case "-q": case "--quiet": quiet = true; break;
                     default:
@@ -86,6 +115,22 @@ namespace Mmd2Gltf
                         input = a;
                         break;
                 }
+            }
+
+            if (playback)
+            {
+                // 再生側 (AnimNode_MmdPhysics) の既定値。明示指定が先にあっても --playback が優先。
+                opt.SimHz = 60f;
+                opt.SubSteps = 2;
+                opt.SolverIterations = 10;
+                opt.JointVelocityIterations = 40;
+                opt.JointMaxCorrectionVel = 30f;
+                opt.UseSplitImpulse = true;
+                opt.UseJointSplitImpulse = true;
+                opt.AlignRotClampAlpha = 0.5f;
+                opt.BoneMergeMode = true;
+                opt.AlignBonePositions = false;
+                opt.WarmupSeconds = 2.0f;
             }
 
             if (input == null) { Usage(); return 2; }
@@ -161,6 +206,8 @@ namespace Mmd2Gltf
                 fkWorldRaw[f] = row;
             }
 
+            if (dumpFk != null) DumpCsv(dumpFk, fkWorldRaw, nb);
+
             // ---------------- 物理 ----------------
             log?.Invoke("物理ベイク:");
             var bake = PhysicsBaker.Run(model, fkWorld, anim.Times, opt, log);
@@ -192,6 +239,8 @@ namespace Mmd2Gltf
             for (int f = 0; f < frames; f++)
                 foreach (int b in bake.PhysicsBones)
                     fkWorldRaw[f][b] = bake.BoneWorld[f][b];
+
+            if (dumpBake != null) DumpCsv(dumpBake, fkWorldRaw, nb);
 
             var rotKeys = new Dictionary<int, float[]>();
             var posKeys = new Dictionary<int, float[]>();

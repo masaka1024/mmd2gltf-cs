@@ -32,6 +32,16 @@ namespace Mmd2Gltf.Physics
         /// <summary>全物理ボーンに位置合わせ (PMXエディタの補正層相当) を適用する。
         /// 既定 OFF: 正しい配置では貫入がむしろ増えることが計測で分かっている。</summary>
         public bool AlignBonePositions = false;
+        /// <summary>ジョイントの速度反復数。0 = エンジン既定。</summary>
+        public int JointVelocityIterations = 0;
+        /// <summary>ジョイントの最大補正速度。0 = エンジン既定。</summary>
+        public float JointMaxCorrectionVel = 0f;
+        /// <summary>接触の split impulse。null = エンジン既定。</summary>
+        public bool? UseSplitImpulse = null;
+        /// <summary>ジョイントの split impulse。null = エンジン既定。</summary>
+        public bool? UseJointSplitImpulse = null;
+        /// <summary>位置合わせ時の回転クランプ alpha。0 = 従来どおり (クランプなし)。</summary>
+        public float AlignRotClampAlpha = 0f;
     }
 
     public sealed class BakeResult
@@ -72,6 +82,10 @@ namespace Mmd2Gltf.Physics
             if (opt.SimHz > 0f) world.FixedTimeStep = 1f / opt.SimHz;
             if (opt.SubSteps > 0) world.SubSteps = opt.SubSteps;
             if (opt.SolverIterations > 0) world.SolverIterations = opt.SolverIterations;
+            if (opt.JointVelocityIterations > 0) world.JointVelocityIterations = opt.JointVelocityIterations;
+            if (opt.JointMaxCorrectionVel > 0f) world.JointMaxCorrectionVel = opt.JointMaxCorrectionVel;
+            if (opt.UseSplitImpulse.HasValue) world.UseSplitImpulse = opt.UseSplitImpulse.Value;
+            if (opt.UseJointSplitImpulse.HasValue) world.UseJointSplitImpulse = opt.UseJointSplitImpulse.Value;
             if (opt.Gravity > 0f) world.Gravity = new Vec3(0f, -opt.Gravity, 0f);
 
             // 物理ボーン = BoneFollow でない剛体が紐づくボーン。
@@ -129,7 +143,7 @@ namespace Mmd2Gltf.Physics
                 }
 
                 RigidTransform?[] aligned = needAligned
-                    ? builder.ComputeAlignedBonePoses(DrivenAt(f))
+                    ? builder.ComputeAlignedBonePoses(DrivenAt(f), opt.AlignRotClampAlpha, opt.AlignBonePositions)
                     : null;
 
                 var row = new RigidTransform[nb];
